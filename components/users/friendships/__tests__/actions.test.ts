@@ -2,6 +2,7 @@ import {
   createFriendshipInvite,
   getFriendshipInvites,
   acceptFriendshipInvite,
+  getFriendships,
 } from "../actions";
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
@@ -837,6 +838,300 @@ describe("Friendship Invite Actions", () => {
 
       expect(result.success).toBe(false);
       expect(result.message).toBe("An unexpected error occurred");
+    });
+  });
+
+  describe("getFriendships", () => {
+    const mockUserId = "user-123";
+
+    beforeEach(() => {
+      // Default successful auth
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: { id: mockUserId } },
+        error: null,
+      });
+    });
+
+    it("should successfully fetch all friendships with friend profiles", async () => {
+      const mockFriendships = [
+        {
+          friendship_id: "friendship-1",
+          user1_id: mockUserId,
+          user2_id: "user-456",
+          created_at: "2023-01-01T00:00:00Z",
+          user1_profile: {
+            profile_id: "profile-123",
+            name: "Current User",
+            studiengang: "Computer Science",
+            university: "Test University",
+            user_id: mockUserId,
+            created_at: "2023-01-01T00:00:00Z",
+            updated_at: "2023-01-01T00:00:00Z",
+          },
+          user2_profile: {
+            profile_id: "profile-456",
+            name: "Friend One",
+            studiengang: "Mathematics",
+            university: "Test University",
+            user_id: "user-456",
+            created_at: "2023-01-01T00:00:00Z",
+            updated_at: "2023-01-01T00:00:00Z",
+          },
+        },
+        {
+          friendship_id: "friendship-2",
+          user1_id: "user-789",
+          user2_id: mockUserId,
+          created_at: "2023-01-02T00:00:00Z",
+          user1_profile: {
+            profile_id: "profile-789",
+            name: "Friend Two",
+            studiengang: "Physics",
+            university: "Another University",
+            user_id: "user-789",
+            created_at: "2023-01-01T00:00:00Z",
+            updated_at: "2023-01-01T00:00:00Z",
+          },
+          user2_profile: {
+            profile_id: "profile-123",
+            name: "Current User",
+            studiengang: "Computer Science",
+            university: "Test University",
+            user_id: mockUserId,
+            created_at: "2023-01-01T00:00:00Z",
+            updated_at: "2023-01-01T00:00:00Z",
+          },
+        },
+      ];
+
+      const mockFriendshipsChain = {
+        select: jest.fn().mockReturnThis(),
+        or: jest.fn().mockReturnThis(),
+        order: jest.fn().mockResolvedValue({
+          data: mockFriendships,
+          error: null,
+        }),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(mockFriendshipsChain);
+
+      const result = await getFriendships();
+
+      expect(result.success).toBe(true);
+      expect(result.message).toBe("Friendships fetched successfully");
+      expect(result.data).toHaveLength(2);
+
+      // Check first friend (user-456, because current user is user1)
+      expect(result.data?.[0]).toEqual({
+        profile_id: "profile-456",
+        name: "Friend One",
+        studiengang: "Mathematics",
+        university: "Test University",
+        user_id: "user-456",
+        created_at: "2023-01-01T00:00:00Z",
+        updated_at: "2023-01-01T00:00:00Z",
+        friendship_created_at: "2023-01-01T00:00:00Z",
+      });
+
+      // Check second friend (user-789, because current user is user2)
+      expect(result.data?.[1]).toEqual({
+        profile_id: "profile-789",
+        name: "Friend Two",
+        studiengang: "Physics",
+        university: "Another University",
+        user_id: "user-789",
+        created_at: "2023-01-01T00:00:00Z",
+        updated_at: "2023-01-01T00:00:00Z",
+        friendship_created_at: "2023-01-02T00:00:00Z",
+      });
+
+      // Verify the correct query was made
+      expect(mockFriendshipsChain.select).toHaveBeenCalledWith(
+        expect.stringContaining("friendship_id")
+      );
+      expect(mockFriendshipsChain.or).toHaveBeenCalledWith(
+        `user1_id.eq.${mockUserId},user2_id.eq.${mockUserId}`
+      );
+      expect(mockFriendshipsChain.order).toHaveBeenCalledWith("created_at", {
+        ascending: false,
+      });
+    });
+
+    it("should return empty array when user has no friends", async () => {
+      const mockFriendshipsChain = {
+        select: jest.fn().mockReturnThis(),
+        or: jest.fn().mockReturnThis(),
+        order: jest.fn().mockResolvedValue({
+          data: [],
+          error: null,
+        }),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(mockFriendshipsChain);
+
+      const result = await getFriendships();
+
+      expect(result.success).toBe(true);
+      expect(result.message).toBe("Friendships fetched successfully");
+      expect(result.data).toEqual([]);
+    });
+
+    it("should handle null friendships data gracefully", async () => {
+      const mockFriendshipsChain = {
+        select: jest.fn().mockReturnThis(),
+        or: jest.fn().mockReturnThis(),
+        order: jest.fn().mockResolvedValue({
+          data: null,
+          error: null,
+        }),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(mockFriendshipsChain);
+
+      const result = await getFriendships();
+
+      expect(result.success).toBe(true);
+      expect(result.message).toBe("Friendships fetched successfully");
+      expect(result.data).toEqual([]);
+    });
+
+    it("should filter out friendships with missing profiles", async () => {
+      const mockFriendships = [
+        {
+          friendship_id: "friendship-1",
+          user1_id: mockUserId,
+          user2_id: "user-456",
+          created_at: "2023-01-01T00:00:00Z",
+          user1_profile: {
+            profile_id: "profile-123",
+            name: "Current User",
+            studiengang: "Computer Science",
+            university: "Test University",
+            user_id: mockUserId,
+            created_at: "2023-01-01T00:00:00Z",
+            updated_at: "2023-01-01T00:00:00Z",
+          },
+          user2_profile: {
+            profile_id: "profile-456",
+            name: "Friend One",
+            studiengang: "Mathematics",
+            university: "Test University",
+            user_id: "user-456",
+            created_at: "2023-01-01T00:00:00Z",
+            updated_at: "2023-01-01T00:00:00Z",
+          },
+        },
+        {
+          friendship_id: "friendship-2",
+          user1_id: "user-789",
+          user2_id: mockUserId,
+          created_at: "2023-01-02T00:00:00Z",
+          user1_profile: null, // Missing profile
+          user2_profile: {
+            profile_id: "profile-123",
+            name: "Current User",
+            studiengang: "Computer Science",
+            university: "Test University",
+            user_id: mockUserId,
+            created_at: "2023-01-01T00:00:00Z",
+            updated_at: "2023-01-01T00:00:00Z",
+          },
+        },
+      ];
+
+      const mockFriendshipsChain = {
+        select: jest.fn().mockReturnThis(),
+        or: jest.fn().mockReturnThis(),
+        order: jest.fn().mockResolvedValue({
+          data: mockFriendships,
+          error: null,
+        }),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(mockFriendshipsChain);
+
+      const result = await getFriendships();
+
+      expect(result.success).toBe(true);
+      expect(result.message).toBe("Friendships fetched successfully");
+      expect(result.data).toHaveLength(1); // Only one valid friendship
+      expect(result.data?.[0].profile_id).toBe("profile-456");
+    });
+
+    it("should reject if user is not authenticated", async () => {
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: null },
+        error: { message: "Not authenticated" },
+      });
+
+      const result = await getFriendships();
+
+      expect(result.success).toBe(false);
+      expect(result.message).toBe("Authentication required");
+      expect(result.data).toBeUndefined();
+    });
+
+    it("should handle database error when fetching friendships", async () => {
+      const mockFriendshipsChain = {
+        select: jest.fn().mockReturnThis(),
+        or: jest.fn().mockReturnThis(),
+        order: jest.fn().mockResolvedValue({
+          data: null,
+          error: { message: "Database error" },
+        }),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(mockFriendshipsChain);
+
+      const result = await getFriendships();
+
+      expect(result.success).toBe(false);
+      expect(result.message).toBe("Error fetching friendships");
+      expect(result.data).toBeUndefined();
+    });
+
+    it("should handle unexpected errors", async () => {
+      mockSupabaseClient.auth.getUser.mockRejectedValue(
+        new Error("Unexpected error")
+      );
+
+      const result = await getFriendships();
+
+      expect(result.success).toBe(false);
+      expect(result.message).toBe("An unexpected error occurred");
+      expect(result.data).toBeUndefined();
+    });
+
+    it("should handle array profiles gracefully", async () => {
+      const mockFriendships = [
+        {
+          friendship_id: "friendship-1",
+          user1_id: mockUserId,
+          user2_id: "user-456",
+          created_at: "2023-01-01T00:00:00Z",
+          user1_profile: {
+            profile_id: "profile-123",
+            name: "Current User",
+            studiengang: "Computer Science",
+            university: "Test University",
+            user_id: mockUserId,
+            created_at: "2023-01-01T00:00:00Z",
+            updated_at: "2023-01-01T00:00:00Z",
+          },
+          user2_profile: [], // Array instead of object
+        },
+      ];
+
+      const mockFriendshipsChain = {
+        select: jest.fn().mockReturnThis(),
+        or: jest.fn().mockReturnThis(),
+        order: jest.fn().mockResolvedValue({
+          data: mockFriendships,
+          error: null,
+        }),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(mockFriendshipsChain);
+
+      const result = await getFriendships();
+
+      expect(result.success).toBe(true);
+      expect(result.message).toBe("Friendships fetched successfully");
+      expect(result.data).toEqual([]); // Should filter out invalid profiles
     });
   });
 });

@@ -1,4 +1,5 @@
-import { setPlace, getCurrentPlace, getUserPlaces } from "../actions";
+import { setPlace } from "../actions";
+import { getCurrentPlace, getUserPlaces } from "../data";
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 

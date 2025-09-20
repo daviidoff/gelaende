@@ -41,35 +41,9 @@ export async function getFriendships(): Promise<GetFriendshipsResult> {
     const userId = user.id;
 
     // Get all friendships where the current user is either user1 or user2
-    // Join with profiles to get friend information
     const { data: friendships, error: friendshipsError } = await supabase
       .from("friendships")
-      .select(
-        `
-        friendship_id,
-        user1_id,
-        user2_id,
-        created_at,
-        user1_profile:profiles!friendships_user1_id_fkey(
-          profile_id,
-          name,
-          studiengang,
-          university,
-          user_id,
-          created_at,
-          updated_at
-        ),
-        user2_profile:profiles!friendships_user2_id_fkey(
-          profile_id,
-          name,
-          studiengang,
-          university,
-          user_id,
-          created_at,
-          updated_at
-        )
-      `
-      )
+      .select("*")
       .or(`user1_id.eq.${userId},user2_id.eq.${userId}`)
       .order("created_at", { ascending: false });
 
@@ -81,36 +55,60 @@ export async function getFriendships(): Promise<GetFriendshipsResult> {
       };
     }
 
-    // Extract friend profiles (the profile that is NOT the current user)
-    const friendProfiles =
-      friendships
-        ?.map((friendship) => {
-          const isUser1 = friendship.user1_id === userId;
-          const friendProfile = isUser1
-            ? friendship.user2_profile
-            : friendship.user1_profile;
+    if (!friendships || friendships.length === 0) {
+      return {
+        success: true,
+        message: "No friendships found",
+        data: [],
+      };
+    }
 
-          // Type assertion to handle the Supabase query result type
-          const profile = friendProfile as any;
+    // Get all unique friend user IDs
+    const friendUserIds = friendships.map((friendship) =>
+      friendship.user1_id === userId ? friendship.user2_id : friendship.user1_id
+    );
 
-          if (!profile || Array.isArray(profile) || !profile.profile_id) {
-            return null;
-          }
+    // Fetch profiles for all friends
+    const { data: profiles, error: profilesError } = await supabase
+      .from("profiles")
+      .select("*")
+      .in("user_id", friendUserIds);
 
-          return {
-            profile_id: profile.profile_id,
-            name: profile.name,
-            studiengang: profile.studiengang,
-            university: profile.university,
-            user_id: profile.user_id,
-            created_at: profile.created_at,
-            updated_at: profile.updated_at,
-            friendship_created_at: friendship.created_at,
-          };
-        })
-        .filter(
-          (profile): profile is NonNullable<typeof profile> => profile !== null
-        ) || [];
+    if (profilesError) {
+      console.error("Error fetching friend profiles:", profilesError);
+      return {
+        success: false,
+        message: "Error fetching friend profiles",
+      };
+    }
+
+    // Combine friendship data with profile data
+    const friendProfiles = friendships
+      .map((friendship) => {
+        const friendUserId =
+          friendship.user1_id === userId
+            ? friendship.user2_id
+            : friendship.user1_id;
+        const profile = profiles?.find((p) => p.user_id === friendUserId);
+
+        if (!profile) {
+          return null;
+        }
+
+        return {
+          profile_id: profile.profile_id,
+          name: profile.name,
+          studiengang: profile.studiengang,
+          university: profile.university,
+          user_id: profile.user_id,
+          created_at: profile.created_at,
+          updated_at: profile.updated_at,
+          friendship_created_at: friendship.created_at,
+        };
+      })
+      .filter(
+        (profile): profile is NonNullable<typeof profile> => profile !== null
+      );
 
     return {
       success: true,
@@ -149,20 +147,7 @@ export async function getFriendshipInvites() {
     // Get received invites (invites sent to the current user)
     const { data: receivedInvites, error: receivedError } = await supabase
       .from("friendship_invites")
-      .select(
-        `
-        invite_id,
-        requester_id,
-        status,
-        created_at,
-        requester_profile:profiles!friendship_invites_requester_id_fkey(
-          profile_id,
-          name,
-          studiengang,
-          university
-        )
-      `
-      )
+      .select("*")
       .eq("requestee_id", user.id)
       .eq("status", "pending")
       .order("created_at", { ascending: false });
@@ -170,20 +155,7 @@ export async function getFriendshipInvites() {
     // Get sent invites (invites sent by the current user)
     const { data: sentInvites, error: sentError } = await supabase
       .from("friendship_invites")
-      .select(
-        `
-        invite_id,
-        requestee_id,
-        status,
-        created_at,
-        requestee_profile:profiles!friendship_invites_requestee_id_fkey(
-          profile_id,
-          name,
-          studiengang,
-          university
-        )
-      `
-      )
+      .select("*")
       .eq("requester_id", user.id)
       .eq("status", "pending")
       .order("created_at", { ascending: false });
@@ -196,12 +168,53 @@ export async function getFriendshipInvites() {
       };
     }
 
+    // Get profiles for all relevant users
+    const requesterIds =
+      receivedInvites?.map((invite) => invite.requester_id) || [];
+    const requesteeIds =
+      sentInvites?.map((invite) => invite.requestee_id) || [];
+    const allUserIds = [...requesterIds, ...requesteeIds];
+
+    let profiles: any[] = [];
+    if (allUserIds.length > 0) {
+      const { data: profilesData, error: profilesError } = await supabase
+        .from("profiles")
+        .select("profile_id, name, studiengang, university, user_id")
+        .in("user_id", allUserIds);
+
+      if (profilesError) {
+        return {
+          success: false,
+          message: "Error fetching user profiles",
+          data: null,
+        };
+      }
+      profiles = profilesData || [];
+    }
+
+    // Combine invite data with profile data
+    const receivedWithProfiles =
+      receivedInvites?.map((invite) => ({
+        ...invite,
+        requester_profile: profiles.find(
+          (p) => p.user_id === invite.requester_id
+        ),
+      })) || [];
+
+    const sentWithProfiles =
+      sentInvites?.map((invite) => ({
+        ...invite,
+        requestee_profile: profiles.find(
+          (p) => p.user_id === invite.requestee_id
+        ),
+      })) || [];
+
     return {
       success: true,
       message: "Friendship invites fetched successfully",
       data: {
-        received: receivedInvites || [],
-        sent: sentInvites || [],
+        received: receivedWithProfiles,
+        sent: sentWithProfiles,
       },
     };
   } catch (error) {

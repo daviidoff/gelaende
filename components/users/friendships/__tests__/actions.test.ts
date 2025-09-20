@@ -399,7 +399,14 @@ describe("Friendship Invite Actions", () => {
       };
       mockReceivedChain.eq.mockReturnValueOnce(mockReceivedChain);
       mockReceivedChain.order.mockResolvedValue({
-        data: mockReceivedInvites,
+        data: [
+          {
+            invite_id: "invite-1",
+            requester_id: "user-456",
+            status: "pending",
+            created_at: "2025-09-19T10:00:00Z",
+          },
+        ],
         error: null,
       });
       mockSupabaseClient.from.mockReturnValueOnce(mockReceivedChain);
@@ -412,10 +419,42 @@ describe("Friendship Invite Actions", () => {
       };
       mockSentChain.eq.mockReturnValueOnce(mockSentChain);
       mockSentChain.order.mockResolvedValue({
-        data: mockSentInvites,
+        data: [
+          {
+            invite_id: "invite-2",
+            requestee_id: "user-789",
+            status: "pending",
+            created_at: "2025-09-19T11:00:00Z",
+          },
+        ],
         error: null,
       });
       mockSupabaseClient.from.mockReturnValueOnce(mockSentChain);
+
+      // Mock profiles query
+      const mockProfilesChain = {
+        select: jest.fn().mockReturnThis(),
+        in: jest.fn().mockResolvedValue({
+          data: [
+            {
+              profile_id: "profile-456",
+              name: "John Doe",
+              studiengang: "Computer Science",
+              university: "TU Munich",
+              user_id: "user-456",
+            },
+            {
+              profile_id: "profile-789",
+              name: "Jane Smith",
+              studiengang: "Mathematics",
+              university: "LMU Munich",
+              user_id: "user-789",
+            },
+          ],
+          error: null,
+        }),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(mockProfilesChain);
 
       const result = await getFriendshipInvites();
 
@@ -423,8 +462,36 @@ describe("Friendship Invite Actions", () => {
         success: true,
         message: "Friendship invites fetched successfully",
         data: {
-          received: mockReceivedInvites,
-          sent: mockSentInvites,
+          received: [
+            {
+              invite_id: "invite-1",
+              requester_id: "user-456",
+              status: "pending",
+              created_at: "2025-09-19T10:00:00Z",
+              requester_profile: {
+                profile_id: "profile-456",
+                name: "John Doe",
+                studiengang: "Computer Science",
+                university: "TU Munich",
+                user_id: "user-456",
+              },
+            },
+          ],
+          sent: [
+            {
+              invite_id: "invite-2",
+              requestee_id: "user-789",
+              status: "pending",
+              created_at: "2025-09-19T11:00:00Z",
+              requestee_profile: {
+                profile_id: "profile-789",
+                name: "Jane Smith",
+                studiengang: "Mathematics",
+                university: "LMU Munich",
+                user_id: "user-789",
+              },
+            },
+          ],
         },
       });
     });
@@ -914,6 +981,35 @@ describe("Friendship Invite Actions", () => {
       };
       mockSupabaseClient.from.mockReturnValueOnce(mockFriendshipsChain);
 
+      // Mock the profiles query
+      const mockProfilesChain = {
+        select: jest.fn().mockReturnThis(),
+        in: jest.fn().mockResolvedValue({
+          data: [
+            {
+              profile_id: "profile-456",
+              name: "Friend One",
+              studiengang: "Mathematics",
+              university: "Test University",
+              user_id: "user-456",
+              created_at: "2023-01-01T00:00:00Z",
+              updated_at: "2023-01-01T00:00:00Z",
+            },
+            {
+              profile_id: "profile-789",
+              name: "Friend Two",
+              studiengang: "Physics",
+              university: "Another University",
+              user_id: "user-789",
+              created_at: "2023-01-01T00:00:00Z",
+              updated_at: "2023-01-01T00:00:00Z",
+            },
+          ],
+          error: null,
+        }),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(mockProfilesChain);
+
       const result = await getFriendships();
 
       expect(result.success).toBe(true);
@@ -945,9 +1041,7 @@ describe("Friendship Invite Actions", () => {
       });
 
       // Verify the correct query was made
-      expect(mockFriendshipsChain.select).toHaveBeenCalledWith(
-        expect.stringContaining("friendship_id")
-      );
+      expect(mockFriendshipsChain.select).toHaveBeenCalledWith("*");
       expect(mockFriendshipsChain.or).toHaveBeenCalledWith(
         `user1_id.eq.${mockUserId},user2_id.eq.${mockUserId}`
       );
@@ -970,7 +1064,7 @@ describe("Friendship Invite Actions", () => {
       const result = await getFriendships();
 
       expect(result.success).toBe(true);
-      expect(result.message).toBe("Friendships fetched successfully");
+      expect(result.message).toBe("No friendships found");
       expect(result.data).toEqual([]);
     });
 
@@ -988,7 +1082,7 @@ describe("Friendship Invite Actions", () => {
       const result = await getFriendships();
 
       expect(result.success).toBe(true);
-      expect(result.message).toBe("Friendships fetched successfully");
+      expect(result.message).toBe("No friendships found");
       expect(result.data).toEqual([]);
     });
 
@@ -1045,6 +1139,27 @@ describe("Friendship Invite Actions", () => {
         }),
       };
       mockSupabaseClient.from.mockReturnValueOnce(mockFriendshipsChain);
+
+      // Mock the profiles query - only return one profile (the other is missing)
+      const mockProfilesChain = {
+        select: jest.fn().mockReturnThis(),
+        in: jest.fn().mockResolvedValue({
+          data: [
+            {
+              profile_id: "profile-456",
+              name: "Friend One",
+              studiengang: "Mathematics",
+              university: "Test University",
+              user_id: "user-456",
+              created_at: "2023-01-01T00:00:00Z",
+              updated_at: "2023-01-01T00:00:00Z",
+            },
+            // Note: profile for user-789 is missing
+          ],
+          error: null,
+        }),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(mockProfilesChain);
 
       const result = await getFriendships();
 
@@ -1126,6 +1241,16 @@ describe("Friendship Invite Actions", () => {
         }),
       };
       mockSupabaseClient.from.mockReturnValueOnce(mockFriendshipsChain);
+
+      // Mock the profiles query - return empty to simulate no valid profiles found
+      const mockProfilesChain = {
+        select: jest.fn().mockReturnThis(),
+        in: jest.fn().mockResolvedValue({
+          data: [], // No profiles found
+          error: null,
+        }),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(mockProfilesChain);
 
       const result = await getFriendships();
 

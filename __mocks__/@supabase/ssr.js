@@ -13,6 +13,7 @@ export const mockSupabaseClient = {
     delete: jest.fn().mockReturnThis(),
     eq: jest.fn().mockReturnThis(),
     or: jest.fn().mockReturnThis(),
+    in: jest.fn().mockReturnThis(),
     single: jest.fn(),
     maybeSingle: jest.fn(),
     order: jest.fn().mockReturnThis(),

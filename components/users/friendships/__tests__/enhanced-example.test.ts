@@ -230,22 +230,23 @@ describe("Friendship Actions - Enhanced Tests", () => {
           user1_id: currentUser.id,
           user2_id: friend1.id,
           created_at: new Date().toISOString(),
-          user1_profile: TestDataFactory.createProfile(currentUser.id),
-          user2_profile: TestDataFactory.createProfile(friend1.id),
         },
         {
           friendship_id: "friendship-2",
           user1_id: currentUser.id,
           user2_id: friend2.id,
           created_at: new Date().toISOString(),
-          user1_profile: TestDataFactory.createProfile(currentUser.id),
-          user2_profile: TestDataFactory.createProfile(friend2.id),
         },
+      ];
+
+      const profilesData = [
+        TestDataFactory.createProfile(friend1.id),
+        TestDataFactory.createProfile(friend2.id),
       ];
 
       TestHelpers.mockAuthUser(mockSupabaseClient, currentUser);
 
-      // Mock the complex friendship query
+      // Mock the friendship and profiles queries
       mockSupabaseClient.from.mockImplementation((table: string) => {
         const createMockQuery = () => ({
           select: jest.fn().mockReturnThis(),
@@ -255,11 +256,7 @@ describe("Friendship Actions - Enhanced Tests", () => {
           eq: jest.fn().mockReturnThis(),
           or: jest.fn().mockReturnThis(),
           in: jest.fn().mockReturnThis(),
-          order: jest
-            .fn()
-            .mockResolvedValue(
-              MockSupabaseFactory.successListResponse(friendshipData)
-            ),
+          order: jest.fn().mockReturnThis(),
           single: jest
             .fn()
             .mockResolvedValue(MockSupabaseFactory.emptyResponse()),
@@ -269,7 +266,19 @@ describe("Friendship Actions - Enhanced Tests", () => {
         });
 
         if (table === "friendships") {
-          return createMockQuery();
+          const query = createMockQuery();
+          query.order.mockResolvedValue(
+            MockSupabaseFactory.successListResponse(friendshipData)
+          );
+          return query;
+        }
+
+        if (table === "profiles") {
+          const query = createMockQuery();
+          query.in.mockResolvedValue(
+            MockSupabaseFactory.successListResponse(profilesData)
+          );
+          return query;
         }
 
         return createMockQuery();

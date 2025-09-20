@@ -257,35 +257,33 @@ export class TestHelpers {
    * Sets up a mock Supabase client with common default behaviors
    */
   static createMockSupabaseClient() {
+    const createMockQuery = () => ({
+      select: jest.fn().mockReturnThis(),
+      insert: jest.fn().mockReturnThis(),
+      update: jest.fn().mockReturnThis(),
+      delete: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockReturnThis(),
+      or: jest.fn().mockReturnThis(),
+      in: jest.fn().mockReturnThis(),
+      order: jest.fn().mockReturnThis(),
+      single: jest.fn().mockResolvedValue(MockSupabaseFactory.emptyResponse()),
+      maybeSingle: jest
+        .fn()
+        .mockResolvedValue(MockSupabaseFactory.emptyResponse()),
+      mockResolvedValue: jest.fn().mockReturnThis(),
+    });
+
     return {
       auth: {
-        getUser: jest
-          .fn()
-          .mockResolvedValue(
-            MockSupabaseFactory.successResponse(
-              TestDataFactory.createAuthUser()
-            )
-          ),
+        getUser: jest.fn().mockResolvedValue({
+          data: { user: TestDataFactory.createAuthUser() },
+          error: null,
+        }),
         signInWithPassword: jest.fn(),
         signUp: jest.fn(),
         signOut: jest.fn(),
       },
-      from: jest.fn(() => ({
-        select: jest.fn().mockReturnThis(),
-        insert: jest.fn().mockReturnThis(),
-        update: jest.fn().mockReturnThis(),
-        delete: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        or: jest.fn().mockReturnThis(),
-        in: jest.fn().mockReturnThis(),
-        single: jest
-          .fn()
-          .mockResolvedValue(MockSupabaseFactory.emptyResponse()),
-        maybeSingle: jest
-          .fn()
-          .mockResolvedValue(MockSupabaseFactory.emptyResponse()),
-        order: jest.fn().mockReturnThis(),
-      })),
+      from: jest.fn(() => createMockQuery()),
     };
   }
 
@@ -297,10 +295,21 @@ export class TestHelpers {
     user?: ReturnType<typeof TestDataFactory.createAuthUser>
   ) {
     const authUser = user || TestDataFactory.createAuthUser();
-    mockClient.auth.getUser.mockResolvedValue(
-      MockSupabaseFactory.successResponse(authUser)
-    );
+    mockClient.auth.getUser.mockResolvedValue({
+      data: { user: authUser },
+      error: null,
+    });
     return authUser;
+  }
+
+  /**
+   * Configures mock to return unauthenticated state
+   */
+  static mockUnauthenticatedUser(mockClient: any) {
+    mockClient.auth.getUser.mockResolvedValue({
+      data: { user: null },
+      error: { message: "Not authenticated", code: "UNAUTHENTICATED" },
+    });
   }
 
   /**

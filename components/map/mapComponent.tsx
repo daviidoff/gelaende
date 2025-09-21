@@ -9,7 +9,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 function formatRelativeTime(timestamp: string): string {
   const now = new Date();
   const past = new Date(timestamp);
+
+  // Check if the past date is valid
+  if (isNaN(past.getTime())) {
+    return "Invalid date";
+  }
+
   const diffInSeconds = Math.floor((now.getTime() - past.getTime()) / 1000);
+
+  // Handle future dates
+  if (diffInSeconds < 0) {
+    return "In the future";
+  }
 
   if (diffInSeconds < 60) {
     return "Just now";

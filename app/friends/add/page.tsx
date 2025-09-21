@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import AddFriends from "@/components/users/friendships/addFriends";
+import ManageInvites from "@/components/users/friendships/manageInvites";
 
 export default async function AddFriendsPage() {
   // Check if user is authenticated
@@ -16,6 +17,7 @@ export default async function AddFriendsPage() {
   return (
     <div className="min-h-screen bg-background">
       <AddFriends />
+      <ManageInvites />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { createFriendshipInvite } from "./actions";
+import { searchUsers, SearchUsersResult } from "../actions";
 
 interface User {
   profile_id: string;

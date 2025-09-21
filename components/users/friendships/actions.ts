@@ -7,10 +7,6 @@ import type {
   FriendshipInsert,
 } from "@/lib/types/database";
 
-// Re-export data functions for convenience
-export { getFriendships, getFriendshipInvites } from "./data";
-export type { GetFriendshipsResult } from "./data";
-
 export interface CreateFriendshipInviteResult {
   success: boolean;
   message: string;

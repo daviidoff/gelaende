@@ -1,5 +1,21 @@
+import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
 import AddFriends from "@/components/users/friendships/addFriends";
 
-export default function AddFriendsPage() {
-  return <AddFriends />;
+export default async function AddFriendsPage() {
+  // Check if user is authenticated
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/auth/login");
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      <AddFriends />
+    </div>
+  );
 }

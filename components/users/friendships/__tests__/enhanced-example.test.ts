@@ -3,7 +3,8 @@
  * This shows best practices for testing with the new factories and mocks
  */
 
-import { createFriendshipInvite, getFriendships } from "../actions";
+import { getFriendships } from "../data";
+import { createFriendshipInvite } from "../actions";
 import { createClient } from "@/lib/supabase/server";
 import {
   TestDataFactory,

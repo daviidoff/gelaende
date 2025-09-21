@@ -1,0 +1,427 @@
+-- Generated dummy data for Geländer app
+-- Generated on 2025-09-21T03:02:43.418Z
+
+-- USERS (Create through Supabase Auth Dashboard or API):
+-- max.mueller@tum.de (password: testpass123)
+-- anna.schmidt@tum.de (password: testpass123)
+-- david.fischer@tum.de (password: testpass123)
+-- julia.weber@tum.de (password: testpass123)
+-- felix.meyer@tum.de (password: testpass123)
+-- laura.wagner@tum.de (password: testpass123)
+-- leon.becker@tum.de (password: testpass123)
+-- emma.schulz@tum.de (password: testpass123)
+-- sophia.richter@lmu.de (password: testpass123)
+-- noah.zimmermann@lmu.de (password: testpass123)
+-- mia.hoffmann@lmu.de (password: testpass123)
+-- paul.kraus@lmu.de (password: testpass123)
+-- lena.wolf@lmu.de (password: testpass123)
+-- tim.neumann@lmu.de (password: testpass123)
+-- sara.lange@hm.edu (password: testpass123)
+-- jan.klein@hm.edu (password: testpass123)
+-- lisa.peters@hm.edu (password: testpass123)
+-- marco.braun@hm.edu (password: testpass123)
+-- elena.garcia@tum.de (password: testpass123)
+-- ahmed.hassan@lmu.de (password: testpass123)
+-- yuki.tanaka@tum.de (password: testpass123)
+
+-- PLACES
+INSERT INTO places (name, location) VALUES
+('TUM Informatik Hauptgebäude', '{"type":"coordinates","lat":48.2625,"lng":11.6681,"address":"Boltzmannstraße 3, Garching","city":"München"}'),
+('TUM Mensa Garching', '{"type":"coordinates","lat":48.2649,"lng":11.6715,"address":"Lichtenbergstraße 2, Garching","city":"München"}'),
+('TUM Bibliothek Garching', '{"type":"coordinates","lat":48.2655,"lng":11.6702,"address":"Universitätsbibliothek Garching","city":"München"}'),
+('LMU Hauptgebäude', '{"type":"coordinates","lat":48.15,"lng":11.5806,"address":"Geschwister-Scholl-Platz 1","city":"München"}'),
+('LMU Mensa Leopoldstraße', '{"type":"coordinates","lat":48.1556,"lng":11.5814,"address":"Leopoldstraße 13a","city":"München"}'),
+('LMU Juristische Bibliothek', '{"type":"coordinates","lat":48.1489,"lng":11.5797,"address":"Professor-Huber-Platz 2","city":"München"}'),
+('Café Münchner Freiheit', '{"type":"coordinates","lat":48.1621,"lng":11.5877,"address":"Münchner Freiheit 20","city":"München"}'),
+('Augustiner Bräu', '{"type":"coordinates","lat":48.1439,"lng":11.5581,"address":"Neuhauserstraße 27","city":"München"}'),
+('Englischer Garten - Chinesischer Turm', '{"type":"coordinates","lat":48.164,"lng":11.5939,"address":"Englischer Garten 3","city":"München"}'),
+('Isar Beach Bar', '{"type":"coordinates","lat":48.128,"lng":11.5893,"address":"Zenneckbrücke, Isar","city":"München"}'),
+('Bayerische Staatsbibliothek', '{"type":"coordinates","lat":48.1429,"lng":11.5819,"address":"Ludwigstraße 16","city":"München"}'),
+('Starbucks Maximilianstraße', '{"type":"coordinates","lat":48.1404,"lng":11.5849,"address":"Maximilianstraße 8","city":"München"}'),
+('Co-Working Space Rocket Internet', '{"type":"coordinates","lat":48.1467,"lng":11.5721,"address":"Sandstraße 33","city":"München"}'),
+('Hochschulsport TUM', '{"type":"coordinates","lat":48.2611,"lng":11.6689,"address":"Georg-Brauchle-Ring 60/62, Garching","city":"München"}'),
+('Olympiapark', '{"type":"coordinates","lat":48.1755,"lng":11.5545,"address":"Spiridon-Louis-Ring 21","city":"München"}'),
+('Boulder Lounge', '{"type":"coordinates","lat":48.139,"lng":11.5563,"address":"Boulderwelt München","city":"München"}'),
+('Studentenwohnheim Garching', '{"type":"coordinates","lat":48.2734,"lng":11.6522,"address":"Lichtenbergstraße 8, Garching","city":"München"}'),
+('Studentenstadt Freimann', '{"type":"coordinates","lat":48.1889,"lng":11.6047,"address":"Christoph-Probst-Straße 10","city":"München"}'),
+('Google Office München', '{"type":"coordinates","lat":48.1392,"lng":11.5653,"address":"Erika-Mann-Straße 33","city":"München"}'),
+('Microsoft Office München', '{"type":"coordinates","lat":48.2078,"lng":11.6647,"address":"Walter-Gropius-Straße 5, Unterschleißheim","city":"München"}'),
+('Viktualienmarkt', '{"type":"coordinates","lat":48.1351,"lng":11.5761,"address":"Viktualienmarkt 3","city":"München"}'),
+('Marienplatz', '{"type":"coordinates","lat":48.1374,"lng":11.5755,"address":"Marienplatz 1","city":"München"}');
+
+-- ACTIVITIES (Replace user_id values with actual UUIDs from auth.users)
+-- Template for activities:
+-- User: max.mueller@tum.de at Boulder Lounge on 2025-09-19T20:44:43.274Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_0]', (SELECT place_id FROM places WHERE name = 'Boulder Lounge'), '2025-09-19T20:44:43.274Z');
+-- User: max.mueller@tum.de at TUM Mensa Garching on 2025-08-22T12:02:08.215Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_1]', (SELECT place_id FROM places WHERE name = 'TUM Mensa Garching'), '2025-08-22T12:02:08.215Z');
+-- User: max.mueller@tum.de at Boulder Lounge on 2025-08-29T16:22:08.316Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_2]', (SELECT place_id FROM places WHERE name = 'Boulder Lounge'), '2025-08-29T16:22:08.316Z');
+-- User: max.mueller@tum.de at TUM Informatik Hauptgebäude on 2025-09-30T22:03:31.281Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_3]', (SELECT place_id FROM places WHERE name = 'TUM Informatik Hauptgebäude'), '2025-09-30T22:03:31.281Z');
+-- User: max.mueller@tum.de at Studentenwohnheim Garching on 2025-09-17T08:18:46.141Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_4]', (SELECT place_id FROM places WHERE name = 'Studentenwohnheim Garching'), '2025-09-17T08:18:46.141Z');
+-- User: max.mueller@tum.de at LMU Hauptgebäude on 2025-09-22T17:47:25.146Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_5]', (SELECT place_id FROM places WHERE name = 'LMU Hauptgebäude'), '2025-09-22T17:47:25.146Z');
+-- User: anna.schmidt@tum.de at LMU Hauptgebäude on 2025-09-19T14:11:22.081Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_6]', (SELECT place_id FROM places WHERE name = 'LMU Hauptgebäude'), '2025-09-19T14:11:22.081Z');
+-- User: anna.schmidt@tum.de at LMU Mensa Leopoldstraße on 2025-09-11T16:21:11.740Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_7]', (SELECT place_id FROM places WHERE name = 'LMU Mensa Leopoldstraße'), '2025-09-11T16:21:11.740Z');
+-- User: anna.schmidt@tum.de at Boulder Lounge on 2025-09-16T21:49:01.688Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_8]', (SELECT place_id FROM places WHERE name = 'Boulder Lounge'), '2025-09-16T21:49:01.688Z');
+-- User: anna.schmidt@tum.de at Augustiner Bräu on 2025-09-04T06:43:47.627Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_9]', (SELECT place_id FROM places WHERE name = 'Augustiner Bräu'), '2025-09-04T06:43:47.627Z');
+-- User: david.fischer@tum.de at Englischer Garten - Chinesischer Turm on 2025-09-08T06:02:02.610Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_10]', (SELECT place_id FROM places WHERE name = 'Englischer Garten - Chinesischer Turm'), '2025-09-08T06:02:02.610Z');
+-- User: david.fischer@tum.de at Englischer Garten - Chinesischer Turm on 2025-09-02T21:28:09.763Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_11]', (SELECT place_id FROM places WHERE name = 'Englischer Garten - Chinesischer Turm'), '2025-09-02T21:28:09.763Z');
+-- User: david.fischer@tum.de at Englischer Garten - Chinesischer Turm on 2025-09-06T09:05:06.881Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_12]', (SELECT place_id FROM places WHERE name = 'Englischer Garten - Chinesischer Turm'), '2025-09-06T09:05:06.881Z');
+-- User: david.fischer@tum.de at Englischer Garten - Chinesischer Turm on 2025-09-13T09:08:58.299Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_13]', (SELECT place_id FROM places WHERE name = 'Englischer Garten - Chinesischer Turm'), '2025-09-13T09:08:58.299Z');
+-- User: david.fischer@tum.de at Marienplatz on 2025-09-10T08:31:47.386Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_14]', (SELECT place_id FROM places WHERE name = 'Marienplatz'), '2025-09-10T08:31:47.386Z');
+-- User: david.fischer@tum.de at Co-Working Space Rocket Internet on 2025-09-19T14:34:38.302Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_15]', (SELECT place_id FROM places WHERE name = 'Co-Working Space Rocket Internet'), '2025-09-19T14:34:38.302Z');
+-- User: david.fischer@tum.de at LMU Hauptgebäude on 2025-09-15T04:33:34.510Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_16]', (SELECT place_id FROM places WHERE name = 'LMU Hauptgebäude'), '2025-09-15T04:33:34.510Z');
+-- User: julia.weber@tum.de at Studentenwohnheim Garching on 2025-10-10T23:57:38.131Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_17]', (SELECT place_id FROM places WHERE name = 'Studentenwohnheim Garching'), '2025-10-10T23:57:38.131Z');
+-- User: julia.weber@tum.de at Studentenstadt Freimann on 2025-09-19T13:40:33.279Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_18]', (SELECT place_id FROM places WHERE name = 'Studentenstadt Freimann'), '2025-09-19T13:40:33.279Z');
+-- User: julia.weber@tum.de at Co-Working Space Rocket Internet on 2025-09-01T22:14:20.508Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_19]', (SELECT place_id FROM places WHERE name = 'Co-Working Space Rocket Internet'), '2025-09-01T22:14:20.508Z');
+-- User: julia.weber@tum.de at Co-Working Space Rocket Internet on 2025-09-23T02:27:32.269Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_20]', (SELECT place_id FROM places WHERE name = 'Co-Working Space Rocket Internet'), '2025-09-23T02:27:32.269Z');
+-- User: julia.weber@tum.de at Starbucks Maximilianstraße on 2025-08-23T22:07:22.307Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_21]', (SELECT place_id FROM places WHERE name = 'Starbucks Maximilianstraße'), '2025-08-23T22:07:22.307Z');
+-- User: julia.weber@tum.de at Studentenwohnheim Garching on 2025-10-15T17:04:38.795Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_22]', (SELECT place_id FROM places WHERE name = 'Studentenwohnheim Garching'), '2025-10-15T17:04:38.795Z');
+-- User: felix.meyer@tum.de at Viktualienmarkt on 2025-10-10T02:34:33.184Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_23]', (SELECT place_id FROM places WHERE name = 'Viktualienmarkt'), '2025-10-10T02:34:33.184Z');
+-- User: felix.meyer@tum.de at TUM Bibliothek Garching on 2025-09-09T17:41:41.478Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_24]', (SELECT place_id FROM places WHERE name = 'TUM Bibliothek Garching'), '2025-09-09T17:41:41.478Z');
+-- User: felix.meyer@tum.de at Viktualienmarkt on 2025-09-18T16:38:30.259Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_25]', (SELECT place_id FROM places WHERE name = 'Viktualienmarkt'), '2025-09-18T16:38:30.259Z');
+-- User: felix.meyer@tum.de at Studentenstadt Freimann on 2025-09-25T18:16:30.519Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_26]', (SELECT place_id FROM places WHERE name = 'Studentenstadt Freimann'), '2025-09-25T18:16:30.519Z');
+-- User: felix.meyer@tum.de at LMU Hauptgebäude on 2025-09-21T02:45:42.778Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_27]', (SELECT place_id FROM places WHERE name = 'LMU Hauptgebäude'), '2025-09-21T02:45:42.778Z');
+-- User: laura.wagner@tum.de at LMU Hauptgebäude on 2025-09-11T07:36:33.631Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_28]', (SELECT place_id FROM places WHERE name = 'LMU Hauptgebäude'), '2025-09-11T07:36:33.631Z');
+-- User: laura.wagner@tum.de at Marienplatz on 2025-08-26T04:01:06.908Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_29]', (SELECT place_id FROM places WHERE name = 'Marienplatz'), '2025-08-26T04:01:06.908Z');
+-- User: laura.wagner@tum.de at Co-Working Space Rocket Internet on 2025-09-16T02:05:06.424Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_30]', (SELECT place_id FROM places WHERE name = 'Co-Working Space Rocket Internet'), '2025-09-16T02:05:06.424Z');
+-- User: laura.wagner@tum.de at LMU Mensa Leopoldstraße on 2025-09-14T23:30:38.406Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_31]', (SELECT place_id FROM places WHERE name = 'LMU Mensa Leopoldstraße'), '2025-09-14T23:30:38.406Z');
+-- User: laura.wagner@tum.de at Studentenwohnheim Garching on 2025-10-03T23:52:33.839Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_32]', (SELECT place_id FROM places WHERE name = 'Studentenwohnheim Garching'), '2025-10-03T23:52:33.839Z');
+-- User: laura.wagner@tum.de at Augustiner Bräu on 2025-09-20T04:36:09.496Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_33]', (SELECT place_id FROM places WHERE name = 'Augustiner Bräu'), '2025-09-20T04:36:09.496Z');
+-- User: leon.becker@tum.de at Microsoft Office München on 2025-08-27T10:55:51.297Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_34]', (SELECT place_id FROM places WHERE name = 'Microsoft Office München'), '2025-08-27T10:55:51.297Z');
+-- User: leon.becker@tum.de at Studentenstadt Freimann on 2025-09-18T14:37:50.069Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_35]', (SELECT place_id FROM places WHERE name = 'Studentenstadt Freimann'), '2025-09-18T14:37:50.069Z');
+-- User: leon.becker@tum.de at Co-Working Space Rocket Internet on 2025-09-15T00:58:52.114Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_36]', (SELECT place_id FROM places WHERE name = 'Co-Working Space Rocket Internet'), '2025-09-15T00:58:52.114Z');
+-- User: leon.becker@tum.de at LMU Mensa Leopoldstraße on 2025-09-17T01:26:35.399Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_37]', (SELECT place_id FROM places WHERE name = 'LMU Mensa Leopoldstraße'), '2025-09-17T01:26:35.399Z');
+-- User: leon.becker@tum.de at Hochschulsport TUM on 2025-09-18T09:35:29.248Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_38]', (SELECT place_id FROM places WHERE name = 'Hochschulsport TUM'), '2025-09-18T09:35:29.248Z');
+-- User: emma.schulz@tum.de at Co-Working Space Rocket Internet on 2025-09-24T23:14:28.009Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_39]', (SELECT place_id FROM places WHERE name = 'Co-Working Space Rocket Internet'), '2025-09-24T23:14:28.009Z');
+-- User: emma.schulz@tum.de at LMU Mensa Leopoldstraße on 2025-09-16T11:49:37.653Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_40]', (SELECT place_id FROM places WHERE name = 'LMU Mensa Leopoldstraße'), '2025-09-16T11:49:37.653Z');
+-- User: emma.schulz@tum.de at Starbucks Maximilianstraße on 2025-09-17T04:41:57.052Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_41]', (SELECT place_id FROM places WHERE name = 'Starbucks Maximilianstraße'), '2025-09-17T04:41:57.052Z');
+-- User: sophia.richter@lmu.de at Café Münchner Freiheit on 2025-08-31T19:05:24.359Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_42]', (SELECT place_id FROM places WHERE name = 'Café Münchner Freiheit'), '2025-08-31T19:05:24.359Z');
+-- User: sophia.richter@lmu.de at Englischer Garten - Chinesischer Turm on 2025-09-04T12:50:00.163Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_43]', (SELECT place_id FROM places WHERE name = 'Englischer Garten - Chinesischer Turm'), '2025-09-04T12:50:00.163Z');
+-- User: sophia.richter@lmu.de at LMU Hauptgebäude on 2025-08-31T19:02:55.760Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_44]', (SELECT place_id FROM places WHERE name = 'LMU Hauptgebäude'), '2025-08-31T19:02:55.760Z');
+-- User: sophia.richter@lmu.de at Microsoft Office München on 2025-09-15T13:14:00.442Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_45]', (SELECT place_id FROM places WHERE name = 'Microsoft Office München'), '2025-09-15T13:14:00.442Z');
+-- User: sophia.richter@lmu.de at LMU Hauptgebäude on 2025-09-13T02:31:26.365Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_46]', (SELECT place_id FROM places WHERE name = 'LMU Hauptgebäude'), '2025-09-13T02:31:26.365Z');
+-- User: noah.zimmermann@lmu.de at Co-Working Space Rocket Internet on 2025-09-27T14:53:49.371Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_47]', (SELECT place_id FROM places WHERE name = 'Co-Working Space Rocket Internet'), '2025-09-27T14:53:49.371Z');
+-- User: noah.zimmermann@lmu.de at TUM Informatik Hauptgebäude on 2025-09-03T17:53:02.129Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_48]', (SELECT place_id FROM places WHERE name = 'TUM Informatik Hauptgebäude'), '2025-09-03T17:53:02.129Z');
+-- User: noah.zimmermann@lmu.de at TUM Informatik Hauptgebäude on 2025-09-27T13:54:38.623Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_49]', (SELECT place_id FROM places WHERE name = 'TUM Informatik Hauptgebäude'), '2025-09-27T13:54:38.623Z');
+-- User: noah.zimmermann@lmu.de at TUM Mensa Garching on 2025-08-23T22:35:02.788Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_50]', (SELECT place_id FROM places WHERE name = 'TUM Mensa Garching'), '2025-08-23T22:35:02.788Z');
+-- User: noah.zimmermann@lmu.de at LMU Mensa Leopoldstraße on 2025-09-20T03:42:50.899Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_51]', (SELECT place_id FROM places WHERE name = 'LMU Mensa Leopoldstraße'), '2025-09-20T03:42:50.899Z');
+-- User: mia.hoffmann@lmu.de at Bayerische Staatsbibliothek on 2025-09-22T23:56:58.010Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_52]', (SELECT place_id FROM places WHERE name = 'Bayerische Staatsbibliothek'), '2025-09-22T23:56:58.010Z');
+-- User: mia.hoffmann@lmu.de at Englischer Garten - Chinesischer Turm on 2025-09-27T17:40:12.030Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_53]', (SELECT place_id FROM places WHERE name = 'Englischer Garten - Chinesischer Turm'), '2025-09-27T17:40:12.030Z');
+-- User: mia.hoffmann@lmu.de at Hochschulsport TUM on 2025-08-31T07:18:16.445Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_54]', (SELECT place_id FROM places WHERE name = 'Hochschulsport TUM'), '2025-08-31T07:18:16.445Z');
+-- User: paul.kraus@lmu.de at TUM Mensa Garching on 2025-08-30T05:17:49.710Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_55]', (SELECT place_id FROM places WHERE name = 'TUM Mensa Garching'), '2025-08-30T05:17:49.710Z');
+-- User: paul.kraus@lmu.de at Studentenstadt Freimann on 2025-09-20T11:21:27.713Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_56]', (SELECT place_id FROM places WHERE name = 'Studentenstadt Freimann'), '2025-09-20T11:21:27.713Z');
+-- User: paul.kraus@lmu.de at Olympiapark on 2025-10-18T05:13:45.593Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_57]', (SELECT place_id FROM places WHERE name = 'Olympiapark'), '2025-10-18T05:13:45.593Z');
+-- User: paul.kraus@lmu.de at Olympiapark on 2025-09-17T02:32:05.621Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_58]', (SELECT place_id FROM places WHERE name = 'Olympiapark'), '2025-09-17T02:32:05.621Z');
+-- User: lena.wolf@lmu.de at Augustiner Bräu on 2025-09-15T03:54:14.876Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_59]', (SELECT place_id FROM places WHERE name = 'Augustiner Bräu'), '2025-09-15T03:54:14.876Z');
+-- User: lena.wolf@lmu.de at Studentenwohnheim Garching on 2025-09-27T12:48:53.218Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_60]', (SELECT place_id FROM places WHERE name = 'Studentenwohnheim Garching'), '2025-09-27T12:48:53.218Z');
+-- User: lena.wolf@lmu.de at Microsoft Office München on 2025-09-19T10:24:03.849Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_61]', (SELECT place_id FROM places WHERE name = 'Microsoft Office München'), '2025-09-19T10:24:03.849Z');
+-- User: lena.wolf@lmu.de at Café Münchner Freiheit on 2025-09-26T19:51:50.377Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_62]', (SELECT place_id FROM places WHERE name = 'Café Münchner Freiheit'), '2025-09-26T19:51:50.377Z');
+-- User: tim.neumann@lmu.de at Co-Working Space Rocket Internet on 2025-10-19T07:14:39.634Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_63]', (SELECT place_id FROM places WHERE name = 'Co-Working Space Rocket Internet'), '2025-10-19T07:14:39.634Z');
+-- User: tim.neumann@lmu.de at Englischer Garten - Chinesischer Turm on 2025-08-25T20:46:05.064Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_64]', (SELECT place_id FROM places WHERE name = 'Englischer Garten - Chinesischer Turm'), '2025-08-25T20:46:05.064Z');
+-- User: tim.neumann@lmu.de at Studentenstadt Freimann on 2025-09-19T03:37:13.993Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_65]', (SELECT place_id FROM places WHERE name = 'Studentenstadt Freimann'), '2025-09-19T03:37:13.993Z');
+-- User: tim.neumann@lmu.de at Olympiapark on 2025-09-15T02:08:24.461Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_66]', (SELECT place_id FROM places WHERE name = 'Olympiapark'), '2025-09-15T02:08:24.461Z');
+-- User: tim.neumann@lmu.de at Microsoft Office München on 2025-09-17T11:31:38.010Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_67]', (SELECT place_id FROM places WHERE name = 'Microsoft Office München'), '2025-09-17T11:31:38.010Z');
+-- User: tim.neumann@lmu.de at Boulder Lounge on 2025-09-25T16:23:49.994Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_68]', (SELECT place_id FROM places WHERE name = 'Boulder Lounge'), '2025-09-25T16:23:49.994Z');
+-- User: sara.lange@hm.edu at TUM Bibliothek Garching on 2025-09-14T17:39:48.696Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_69]', (SELECT place_id FROM places WHERE name = 'TUM Bibliothek Garching'), '2025-09-14T17:39:48.696Z');
+-- User: sara.lange@hm.edu at Englischer Garten - Chinesischer Turm on 2025-09-18T11:38:54.522Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_70]', (SELECT place_id FROM places WHERE name = 'Englischer Garten - Chinesischer Turm'), '2025-09-18T11:38:54.522Z');
+-- User: sara.lange@hm.edu at Studentenwohnheim Garching on 2025-09-25T20:26:56.681Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_71]', (SELECT place_id FROM places WHERE name = 'Studentenwohnheim Garching'), '2025-09-25T20:26:56.681Z');
+-- User: sara.lange@hm.edu at TUM Mensa Garching on 2025-09-17T04:30:22.636Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_72]', (SELECT place_id FROM places WHERE name = 'TUM Mensa Garching'), '2025-09-17T04:30:22.636Z');
+-- User: sara.lange@hm.edu at Boulder Lounge on 2025-08-28T04:51:39.467Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_73]', (SELECT place_id FROM places WHERE name = 'Boulder Lounge'), '2025-08-28T04:51:39.467Z');
+-- User: sara.lange@hm.edu at LMU Hauptgebäude on 2025-09-23T20:52:48.333Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_74]', (SELECT place_id FROM places WHERE name = 'LMU Hauptgebäude'), '2025-09-23T20:52:48.333Z');
+-- User: jan.klein@hm.edu at Starbucks Maximilianstraße on 2025-09-17T09:45:37.265Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_75]', (SELECT place_id FROM places WHERE name = 'Starbucks Maximilianstraße'), '2025-09-17T09:45:37.265Z');
+-- User: jan.klein@hm.edu at TUM Informatik Hauptgebäude on 2025-09-30T11:06:20.364Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_76]', (SELECT place_id FROM places WHERE name = 'TUM Informatik Hauptgebäude'), '2025-09-30T11:06:20.364Z');
+-- User: jan.klein@hm.edu at Augustiner Bräu on 2025-09-15T05:47:57.273Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_77]', (SELECT place_id FROM places WHERE name = 'Augustiner Bräu'), '2025-09-15T05:47:57.273Z');
+-- User: jan.klein@hm.edu at Isar Beach Bar on 2025-08-30T20:12:48.799Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_78]', (SELECT place_id FROM places WHERE name = 'Isar Beach Bar'), '2025-08-30T20:12:48.799Z');
+-- User: jan.klein@hm.edu at Marienplatz on 2025-09-16T23:47:08.879Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_79]', (SELECT place_id FROM places WHERE name = 'Marienplatz'), '2025-09-16T23:47:08.879Z');
+-- User: jan.klein@hm.edu at Café Münchner Freiheit on 2025-10-08T04:18:55.004Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_80]', (SELECT place_id FROM places WHERE name = 'Café Münchner Freiheit'), '2025-10-08T04:18:55.004Z');
+-- User: jan.klein@hm.edu at Studentenwohnheim Garching on 2025-09-26T23:45:42.461Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_81]', (SELECT place_id FROM places WHERE name = 'Studentenwohnheim Garching'), '2025-09-26T23:45:42.461Z');
+-- User: lisa.peters@hm.edu at Café Münchner Freiheit on 2025-09-16T08:53:32.895Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_82]', (SELECT place_id FROM places WHERE name = 'Café Münchner Freiheit'), '2025-09-16T08:53:32.895Z');
+-- User: lisa.peters@hm.edu at Bayerische Staatsbibliothek on 2025-09-02T19:25:14.442Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_83]', (SELECT place_id FROM places WHERE name = 'Bayerische Staatsbibliothek'), '2025-09-02T19:25:14.442Z');
+-- User: lisa.peters@hm.edu at Marienplatz on 2025-09-13T20:34:54.638Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_84]', (SELECT place_id FROM places WHERE name = 'Marienplatz'), '2025-09-13T20:34:54.638Z');
+-- User: lisa.peters@hm.edu at Café Münchner Freiheit on 2025-09-15T06:17:41.909Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_85]', (SELECT place_id FROM places WHERE name = 'Café Münchner Freiheit'), '2025-09-15T06:17:41.909Z');
+-- User: lisa.peters@hm.edu at LMU Hauptgebäude on 2025-09-13T19:38:20.001Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_86]', (SELECT place_id FROM places WHERE name = 'LMU Hauptgebäude'), '2025-09-13T19:38:20.001Z');
+-- User: marco.braun@hm.edu at Bayerische Staatsbibliothek on 2025-09-23T12:39:24.828Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_87]', (SELECT place_id FROM places WHERE name = 'Bayerische Staatsbibliothek'), '2025-09-23T12:39:24.828Z');
+-- User: marco.braun@hm.edu at Google Office München on 2025-09-19T09:44:19.710Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_88]', (SELECT place_id FROM places WHERE name = 'Google Office München'), '2025-09-19T09:44:19.710Z');
+-- User: marco.braun@hm.edu at Hochschulsport TUM on 2025-09-16T04:42:48.023Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_89]', (SELECT place_id FROM places WHERE name = 'Hochschulsport TUM'), '2025-09-16T04:42:48.023Z');
+-- User: marco.braun@hm.edu at Café Münchner Freiheit on 2025-10-21T03:01:05.006Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_90]', (SELECT place_id FROM places WHERE name = 'Café Münchner Freiheit'), '2025-10-21T03:01:05.006Z');
+-- User: marco.braun@hm.edu at Studentenwohnheim Garching on 2025-09-20T00:10:58.248Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_91]', (SELECT place_id FROM places WHERE name = 'Studentenwohnheim Garching'), '2025-09-20T00:10:58.248Z');
+-- User: elena.garcia@tum.de at Hochschulsport TUM on 2025-09-13T20:21:35.911Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_92]', (SELECT place_id FROM places WHERE name = 'Hochschulsport TUM'), '2025-09-13T20:21:35.911Z');
+-- User: elena.garcia@tum.de at Viktualienmarkt on 2025-09-17T09:12:30.196Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_93]', (SELECT place_id FROM places WHERE name = 'Viktualienmarkt'), '2025-09-17T09:12:30.196Z');
+-- User: elena.garcia@tum.de at Microsoft Office München on 2025-09-17T06:09:21.227Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_94]', (SELECT place_id FROM places WHERE name = 'Microsoft Office München'), '2025-09-17T06:09:21.227Z');
+-- User: elena.garcia@tum.de at Studentenwohnheim Garching on 2025-09-03T09:35:42.598Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_95]', (SELECT place_id FROM places WHERE name = 'Studentenwohnheim Garching'), '2025-09-03T09:35:42.598Z');
+-- User: elena.garcia@tum.de at Boulder Lounge on 2025-09-18T12:00:24.963Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_96]', (SELECT place_id FROM places WHERE name = 'Boulder Lounge'), '2025-09-18T12:00:24.963Z');
+-- User: ahmed.hassan@lmu.de at Studentenstadt Freimann on 2025-08-23T15:23:37.049Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_97]', (SELECT place_id FROM places WHERE name = 'Studentenstadt Freimann'), '2025-08-23T15:23:37.049Z');
+-- User: ahmed.hassan@lmu.de at Starbucks Maximilianstraße on 2025-09-22T08:28:51.782Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_98]', (SELECT place_id FROM places WHERE name = 'Starbucks Maximilianstraße'), '2025-09-22T08:28:51.782Z');
+-- User: ahmed.hassan@lmu.de at Englischer Garten - Chinesischer Turm on 2025-09-25T23:38:54.950Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_99]', (SELECT place_id FROM places WHERE name = 'Englischer Garten - Chinesischer Turm'), '2025-09-25T23:38:54.950Z');
+-- User: ahmed.hassan@lmu.de at LMU Juristische Bibliothek on 2025-09-15T14:51:06.182Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_100]', (SELECT place_id FROM places WHERE name = 'LMU Juristische Bibliothek'), '2025-09-15T14:51:06.182Z');
+-- User: ahmed.hassan@lmu.de at Café Münchner Freiheit on 2025-09-17T18:19:01.307Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_101]', (SELECT place_id FROM places WHERE name = 'Café Münchner Freiheit'), '2025-09-17T18:19:01.307Z');
+-- User: ahmed.hassan@lmu.de at Studentenstadt Freimann on 2025-09-10T02:13:43.360Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_102]', (SELECT place_id FROM places WHERE name = 'Studentenstadt Freimann'), '2025-09-10T02:13:43.360Z');
+-- User: ahmed.hassan@lmu.de at Studentenwohnheim Garching on 2025-09-15T20:08:58.030Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_103]', (SELECT place_id FROM places WHERE name = 'Studentenwohnheim Garching'), '2025-09-15T20:08:58.030Z');
+-- User: yuki.tanaka@tum.de at Google Office München on 2025-09-21T03:01:09.899Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_104]', (SELECT place_id FROM places WHERE name = 'Google Office München'), '2025-09-21T03:01:09.899Z');
+-- User: yuki.tanaka@tum.de at Google Office München on 2025-09-25T13:14:16.712Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_105]', (SELECT place_id FROM places WHERE name = 'Google Office München'), '2025-09-25T13:14:16.712Z');
+-- User: yuki.tanaka@tum.de at LMU Hauptgebäude on 2025-09-19T07:59:40.995Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_106]', (SELECT place_id FROM places WHERE name = 'LMU Hauptgebäude'), '2025-09-19T07:59:40.995Z');
+-- User: yuki.tanaka@tum.de at TUM Mensa Garching on 2025-10-12T22:17:06.793Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_107]', (SELECT place_id FROM places WHERE name = 'TUM Mensa Garching'), '2025-10-12T22:17:06.793Z');
+-- User: yuki.tanaka@tum.de at LMU Mensa Leopoldstraße on 2025-09-25T11:12:54.797Z
+-- INSERT INTO activities (user_id, place_id, time) VALUES ('[USER_UUID_108]', (SELECT place_id FROM places WHERE name = 'LMU Mensa Leopoldstraße'), '2025-09-25T11:12:54.797Z');
+
+-- FRIENDSHIPS (Replace user_id values with actual UUIDs from auth.users)
+-- Friendship between Max Müller (max.mueller@tum.de) and Anna Schmidt (anna.schmidt@tum.de)
+-- INSERT INTO friendships (user1_id, user2_id) VALUES ('[USER1_UUID_0]', '[USER2_UUID_0]');
+-- Friendship between Max Müller (max.mueller@tum.de) and Felix Meyer (felix.meyer@tum.de)
+-- INSERT INTO friendships (user1_id, user2_id) VALUES ('[USER1_UUID_1]', '[USER2_UUID_1]');
+-- Friendship between Max Müller (max.mueller@tum.de) and Emma Schulz (emma.schulz@tum.de)
+-- INSERT INTO friendships (user1_id, user2_id) VALUES ('[USER1_UUID_2]', '[USER2_UUID_2]');
+-- Friendship between Max Müller (max.mueller@tum.de) and Yuki Tanaka (yuki.tanaka@tum.de)
+-- INSERT INTO friendships (user1_id, user2_id) VALUES ('[USER1_UUID_3]', '[USER2_UUID_3]');
+-- Friendship between Anna Schmidt (anna.schmidt@tum.de) and Julia Weber (julia.weber@tum.de)
+-- INSERT INTO friendships (user1_id, user2_id) VALUES ('[USER1_UUID_4]', '[USER2_UUID_4]');
+-- Friendship between Anna Schmidt (anna.schmidt@tum.de) and Leon Becker (leon.becker@tum.de)
+-- INSERT INTO friendships (user1_id, user2_id) VALUES ('[USER1_UUID_5]', '[USER2_UUID_5]');
+-- Friendship between Anna Schmidt (anna.schmidt@tum.de) and Emma Schulz (emma.schulz@tum.de)
+-- INSERT INTO friendships (user1_id, user2_id) VALUES ('[USER1_UUID_6]', '[USER2_UUID_6]');
+-- Friendship between Anna Schmidt (anna.schmidt@tum.de) and Elena García (elena.garcia@tum.de)
+-- INSERT INTO friendships (user1_id, user2_id) VALUES ('[USER1_UUID_7]', '[USER2_UUID_7]');
+-- Friendship between David Fischer (david.fischer@tum.de) and Felix Meyer (felix.meyer@tum.de)
+-- INSERT INTO friendships (user1_id, user2_id) VALUES ('[USER1_UUID_8]', '[USER2_UUID_8]');
+-- Friendship between David Fischer (david.fischer@tum.de) and Emma Schulz (emma.schulz@tum.de)
+-- INSERT INTO friendships (user1_id, user2_id) VALUES ('[USER1_UUID_9]', '[USER2_UUID_9]');
+-- Friendship between David Fischer (david.fischer@tum.de) and Elena García (elena.garcia@tum.de)
+-- INSERT INTO friendships (user1_id, user2_id) VALUES ('[USER1_UUID_10]', '[USER2_UUID_10]');
+-- Friendship between David Fischer (david.fischer@tum.de) and Yuki Tanaka (yuki.tanaka@tum.de)
+-- INSERT INTO friendships (user1_id, user2_id) VALUES ('[USER1_UUID_11]', '[USER2_UUID_11]');
+-- Friendship between Julia Weber (julia.weber@tum.de) and Felix Meyer (felix.meyer@tum.de)
+-- INSERT INTO friendships (user1_id, user2_id) VALUES ('[USER1_UUID_12]', '[USER2_UUID_12]');
+-- Friendship between Julia Weber (julia.weber@tum.de) and Yuki Tanaka (yuki.tanaka@tum.de)
+-- INSERT INTO friendships (user1_id, user2_id) VALUES ('[USER1_UUID_13]', '[USER2_UUID_13]');
+-- Friendship between Felix Meyer (felix.meyer@tum.de) and Emma Schulz (emma.schulz@tum.de)
+-- INSERT INTO friendships (user1_id, user2_id) VALUES ('[USER1_UUID_14]', '[USER2_UUID_14]');
+-- Friendship between Sophia Richter (sophia.richter@lmu.de) and Tim Neumann (tim.neumann@lmu.de)
+-- INSERT INTO friendships (user1_id, user2_id) VALUES ('[USER1_UUID_15]', '[USER2_UUID_15]');
+-- Friendship between Noah Zimmermann (noah.zimmermann@lmu.de) and Paul Kraus (paul.kraus@lmu.de)
+-- INSERT INTO friendships (user1_id, user2_id) VALUES ('[USER1_UUID_16]', '[USER2_UUID_16]');
+-- Friendship between Noah Zimmermann (noah.zimmermann@lmu.de) and Lena Wolf (lena.wolf@lmu.de)
+-- INSERT INTO friendships (user1_id, user2_id) VALUES ('[USER1_UUID_17]', '[USER2_UUID_17]');
+-- Friendship between Noah Zimmermann (noah.zimmermann@lmu.de) and Ahmed Hassan (ahmed.hassan@lmu.de)
+-- INSERT INTO friendships (user1_id, user2_id) VALUES ('[USER1_UUID_18]', '[USER2_UUID_18]');
+-- Friendship between Mia Hoffmann (mia.hoffmann@lmu.de) and Paul Kraus (paul.kraus@lmu.de)
+-- INSERT INTO friendships (user1_id, user2_id) VALUES ('[USER1_UUID_19]', '[USER2_UUID_19]');
+-- Friendship between Mia Hoffmann (mia.hoffmann@lmu.de) and Ahmed Hassan (ahmed.hassan@lmu.de)
+-- INSERT INTO friendships (user1_id, user2_id) VALUES ('[USER1_UUID_20]', '[USER2_UUID_20]');
+-- Friendship between Paul Kraus (paul.kraus@lmu.de) and Tim Neumann (tim.neumann@lmu.de)
+-- INSERT INTO friendships (user1_id, user2_id) VALUES ('[USER1_UUID_21]', '[USER2_UUID_21]');
+-- Friendship between Tim Neumann (tim.neumann@lmu.de) and Ahmed Hassan (ahmed.hassan@lmu.de)
+-- INSERT INTO friendships (user1_id, user2_id) VALUES ('[USER1_UUID_22]', '[USER2_UUID_22]');
+-- Friendship between Sara Lange (sara.lange@hm.edu) and Lisa Peters (lisa.peters@hm.edu)
+-- INSERT INTO friendships (user1_id, user2_id) VALUES ('[USER1_UUID_23]', '[USER2_UUID_23]');
+-- Friendship between Sara Lange (sara.lange@hm.edu) and Marco Braun (marco.braun@hm.edu)
+-- INSERT INTO friendships (user1_id, user2_id) VALUES ('[USER1_UUID_24]', '[USER2_UUID_24]');
+-- Friendship between Jan Klein (jan.klein@hm.edu) and Marco Braun (marco.braun@hm.edu)
+-- INSERT INTO friendships (user1_id, user2_id) VALUES ('[USER1_UUID_25]', '[USER2_UUID_25]');
+-- Friendship between Max Müller (max.mueller@tum.de) and Sara Lange (sara.lange@hm.edu)
+-- INSERT INTO friendships (user1_id, user2_id) VALUES ('[USER1_UUID_26]', '[USER2_UUID_26]');
+-- Friendship between Max Müller (max.mueller@tum.de) and Jan Klein (jan.klein@hm.edu)
+-- INSERT INTO friendships (user1_id, user2_id) VALUES ('[USER1_UUID_27]', '[USER2_UUID_27]');
+-- Friendship between Anna Schmidt (anna.schmidt@tum.de) and Sophia Richter (sophia.richter@lmu.de)
+-- INSERT INTO friendships (user1_id, user2_id) VALUES ('[USER1_UUID_28]', '[USER2_UUID_28]');
+-- Friendship between Anna Schmidt (anna.schmidt@tum.de) and Lisa Peters (lisa.peters@hm.edu)
+-- INSERT INTO friendships (user1_id, user2_id) VALUES ('[USER1_UUID_29]', '[USER2_UUID_29]');
+-- Friendship between David Fischer (david.fischer@tum.de) and Sophia Richter (sophia.richter@lmu.de)
+-- INSERT INTO friendships (user1_id, user2_id) VALUES ('[USER1_UUID_30]', '[USER2_UUID_30]');
+-- Friendship between David Fischer (david.fischer@tum.de) and Lena Wolf (lena.wolf@lmu.de)
+-- INSERT INTO friendships (user1_id, user2_id) VALUES ('[USER1_UUID_31]', '[USER2_UUID_31]');
+-- Friendship between Julia Weber (julia.weber@tum.de) and Tim Neumann (tim.neumann@lmu.de)
+-- INSERT INTO friendships (user1_id, user2_id) VALUES ('[USER1_UUID_32]', '[USER2_UUID_32]');
+-- Friendship between Felix Meyer (felix.meyer@tum.de) and Sophia Richter (sophia.richter@lmu.de)
+-- INSERT INTO friendships (user1_id, user2_id) VALUES ('[USER1_UUID_33]', '[USER2_UUID_33]');
+-- Friendship between Felix Meyer (felix.meyer@tum.de) and Paul Kraus (paul.kraus@lmu.de)
+-- INSERT INTO friendships (user1_id, user2_id) VALUES ('[USER1_UUID_34]', '[USER2_UUID_34]');
+-- Friendship between Felix Meyer (felix.meyer@tum.de) and Lena Wolf (lena.wolf@lmu.de)
+-- INSERT INTO friendships (user1_id, user2_id) VALUES ('[USER1_UUID_35]', '[USER2_UUID_35]');
+-- Friendship between Felix Meyer (felix.meyer@tum.de) and Sara Lange (sara.lange@hm.edu)
+-- INSERT INTO friendships (user1_id, user2_id) VALUES ('[USER1_UUID_36]', '[USER2_UUID_36]');
+-- Friendship between Laura Wagner (laura.wagner@tum.de) and Mia Hoffmann (mia.hoffmann@lmu.de)
+-- INSERT INTO friendships (user1_id, user2_id) VALUES ('[USER1_UUID_37]', '[USER2_UUID_37]');
+-- Friendship between Leon Becker (leon.becker@tum.de) and Mia Hoffmann (mia.hoffmann@lmu.de)
+-- INSERT INTO friendships (user1_id, user2_id) VALUES ('[USER1_UUID_38]', '[USER2_UUID_38]');
+-- Friendship between Leon Becker (leon.becker@tum.de) and Paul Kraus (paul.kraus@lmu.de)
+-- INSERT INTO friendships (user1_id, user2_id) VALUES ('[USER1_UUID_39]', '[USER2_UUID_39]');
+-- Friendship between Leon Becker (leon.becker@tum.de) and Sara Lange (sara.lange@hm.edu)
+-- INSERT INTO friendships (user1_id, user2_id) VALUES ('[USER1_UUID_40]', '[USER2_UUID_40]');
+-- Friendship between Sophia Richter (sophia.richter@lmu.de) and Jan Klein (jan.klein@hm.edu)
+-- INSERT INTO friendships (user1_id, user2_id) VALUES ('[USER1_UUID_41]', '[USER2_UUID_41]');
+-- Friendship between Tim Neumann (tim.neumann@lmu.de) and Jan Klein (jan.klein@hm.edu)
+-- INSERT INTO friendships (user1_id, user2_id) VALUES ('[USER1_UUID_42]', '[USER2_UUID_42]');
+-- Friendship between Sara Lange (sara.lange@hm.edu) and Elena García (elena.garcia@tum.de)
+-- INSERT INTO friendships (user1_id, user2_id) VALUES ('[USER1_UUID_43]', '[USER2_UUID_43]');
+-- Friendship between Marco Braun (marco.braun@hm.edu) and Yuki Tanaka (yuki.tanaka@tum.de)
+-- INSERT INTO friendships (user1_id, user2_id) VALUES ('[USER1_UUID_44]', '[USER2_UUID_44]');
+-- Friendship between Elena García (elena.garcia@tum.de) and Ahmed Hassan (ahmed.hassan@lmu.de)
+-- INSERT INTO friendships (user1_id, user2_id) VALUES ('[USER1_UUID_45]', '[USER2_UUID_45]');
+
+-- FRIENDSHIP INVITES (Replace user_id values with actual UUIDs from auth.users)
+-- Invite from Max Müller (max.mueller@tum.de) to David Fischer (david.fischer@tum.de) - Status: pending
+-- INSERT INTO friendship_invites (requester_id, requestee_id, status, created_at) VALUES ('[REQUESTER_UUID_0]', '[REQUESTEE_UUID_0]', 'pending', '2025-09-11T14:07:36.836Z');
+-- Invite from David Fischer (david.fischer@tum.de) to Noah Zimmermann (noah.zimmermann@lmu.de) - Status: pending
+-- INSERT INTO friendship_invites (requester_id, requestee_id, status, created_at) VALUES ('[REQUESTER_UUID_1]', '[REQUESTEE_UUID_1]', 'pending', '2025-09-09T03:49:34.821Z');
+-- Invite from David Fischer (david.fischer@tum.de) to Ahmed Hassan (ahmed.hassan@lmu.de) - Status: accepted
+-- INSERT INTO friendship_invites (requester_id, requestee_id, status, created_at) VALUES ('[REQUESTER_UUID_2]', '[REQUESTEE_UUID_2]', 'accepted', '2025-09-11T02:10:43.146Z');
+-- Invite from Julia Weber (julia.weber@tum.de) to Emma Schulz (emma.schulz@tum.de) - Status: pending
+-- INSERT INTO friendship_invites (requester_id, requestee_id, status, created_at) VALUES ('[REQUESTER_UUID_3]', '[REQUESTEE_UUID_3]', 'pending', '2025-09-18T10:25:51.546Z');
+-- Invite from Felix Meyer (felix.meyer@tum.de) to Jan Klein (jan.klein@hm.edu) - Status: accepted
+-- INSERT INTO friendship_invites (requester_id, requestee_id, status, created_at) VALUES ('[REQUESTER_UUID_4]', '[REQUESTEE_UUID_4]', 'accepted', '2025-09-11T09:50:46.629Z');
+-- Invite from Laura Wagner (laura.wagner@tum.de) to Noah Zimmermann (noah.zimmermann@lmu.de) - Status: accepted
+-- INSERT INTO friendship_invites (requester_id, requestee_id, status, created_at) VALUES ('[REQUESTER_UUID_5]', '[REQUESTEE_UUID_5]', 'accepted', '2025-09-13T07:43:34.275Z');
+-- Invite from Laura Wagner (laura.wagner@tum.de) to Lena Wolf (lena.wolf@lmu.de) - Status: rejected
+-- INSERT INTO friendship_invites (requester_id, requestee_id, status, created_at) VALUES ('[REQUESTER_UUID_6]', '[REQUESTEE_UUID_6]', 'rejected', '2025-09-19T20:59:02.063Z');
+-- Invite from Laura Wagner (laura.wagner@tum.de) to Ahmed Hassan (ahmed.hassan@lmu.de) - Status: pending
+-- INSERT INTO friendship_invites (requester_id, requestee_id, status, created_at) VALUES ('[REQUESTER_UUID_7]', '[REQUESTEE_UUID_7]', 'pending', '2025-09-16T14:30:29.161Z');
+-- Invite from Leon Becker (leon.becker@tum.de) to Laura Wagner (laura.wagner@tum.de) - Status: accepted
+-- INSERT INTO friendship_invites (requester_id, requestee_id, status, created_at) VALUES ('[REQUESTER_UUID_8]', '[REQUESTEE_UUID_8]', 'accepted', '2025-09-14T12:57:29.993Z');
+-- Invite from Leon Becker (leon.becker@tum.de) to Sophia Richter (sophia.richter@lmu.de) - Status: pending
+-- INSERT INTO friendship_invites (requester_id, requestee_id, status, created_at) VALUES ('[REQUESTER_UUID_9]', '[REQUESTEE_UUID_9]', 'pending', '2025-09-16T18:35:17.628Z');
+-- Invite from Leon Becker (leon.becker@tum.de) to Lisa Peters (lisa.peters@hm.edu) - Status: pending
+-- INSERT INTO friendship_invites (requester_id, requestee_id, status, created_at) VALUES ('[REQUESTER_UUID_10]', '[REQUESTEE_UUID_10]', 'pending', '2025-09-17T14:24:21.872Z');
+-- Invite from Emma Schulz (emma.schulz@tum.de) to Lena Wolf (lena.wolf@lmu.de) - Status: pending
+-- INSERT INTO friendship_invites (requester_id, requestee_id, status, created_at) VALUES ('[REQUESTER_UUID_11]', '[REQUESTEE_UUID_11]', 'pending', '2025-09-11T00:02:39.171Z');
+-- Invite from Noah Zimmermann (noah.zimmermann@lmu.de) to Leon Becker (leon.becker@tum.de) - Status: accepted
+-- INSERT INTO friendship_invites (requester_id, requestee_id, status, created_at) VALUES ('[REQUESTER_UUID_12]', '[REQUESTEE_UUID_12]', 'accepted', '2025-09-21T01:23:03.216Z');
+-- Invite from Noah Zimmermann (noah.zimmermann@lmu.de) to Sophia Richter (sophia.richter@lmu.de) - Status: accepted
+-- INSERT INTO friendship_invites (requester_id, requestee_id, status, created_at) VALUES ('[REQUESTER_UUID_13]', '[REQUESTEE_UUID_13]', 'accepted', '2025-09-08T15:44:54.831Z');
+-- Invite from Noah Zimmermann (noah.zimmermann@lmu.de) to Mia Hoffmann (mia.hoffmann@lmu.de) - Status: pending
+-- INSERT INTO friendship_invites (requester_id, requestee_id, status, created_at) VALUES ('[REQUESTER_UUID_14]', '[REQUESTEE_UUID_14]', 'pending', '2025-09-17T19:39:46.111Z');
+-- Invite from Mia Hoffmann (mia.hoffmann@lmu.de) to Tim Neumann (tim.neumann@lmu.de) - Status: rejected
+-- INSERT INTO friendship_invites (requester_id, requestee_id, status, created_at) VALUES ('[REQUESTER_UUID_15]', '[REQUESTEE_UUID_15]', 'rejected', '2025-09-16T17:40:32.831Z');
+-- Invite from Paul Kraus (paul.kraus@lmu.de) to Julia Weber (julia.weber@tum.de) - Status: pending
+-- INSERT INTO friendship_invites (requester_id, requestee_id, status, created_at) VALUES ('[REQUESTER_UUID_16]', '[REQUESTEE_UUID_16]', 'pending', '2025-09-07T16:55:09.312Z');
+-- Invite from Lena Wolf (lena.wolf@lmu.de) to Jan Klein (jan.klein@hm.edu) - Status: pending
+-- INSERT INTO friendship_invites (requester_id, requestee_id, status, created_at) VALUES ('[REQUESTER_UUID_17]', '[REQUESTEE_UUID_17]', 'pending', '2025-09-13T01:46:36.417Z');
+-- Invite from Tim Neumann (tim.neumann@lmu.de) to Noah Zimmermann (noah.zimmermann@lmu.de) - Status: pending
+-- INSERT INTO friendship_invites (requester_id, requestee_id, status, created_at) VALUES ('[REQUESTER_UUID_18]', '[REQUESTEE_UUID_18]', 'pending', '2025-09-13T19:43:44.850Z');
+-- Invite from Tim Neumann (tim.neumann@lmu.de) to Lisa Peters (lisa.peters@hm.edu) - Status: accepted
+-- INSERT INTO friendship_invites (requester_id, requestee_id, status, created_at) VALUES ('[REQUESTER_UUID_19]', '[REQUESTEE_UUID_19]', 'accepted', '2025-09-07T23:50:56.519Z');
+-- Invite from Sara Lange (sara.lange@hm.edu) to Anna Schmidt (anna.schmidt@tum.de) - Status: pending
+-- INSERT INTO friendship_invites (requester_id, requestee_id, status, created_at) VALUES ('[REQUESTER_UUID_20]', '[REQUESTEE_UUID_20]', 'pending', '2025-09-18T11:40:59.970Z');
+-- Invite from Jan Klein (jan.klein@hm.edu) to David Fischer (david.fischer@tum.de) - Status: pending
+-- INSERT INTO friendship_invites (requester_id, requestee_id, status, created_at) VALUES ('[REQUESTER_UUID_21]', '[REQUESTEE_UUID_21]', 'pending', '2025-09-13T13:55:13.440Z');
+-- Invite from Jan Klein (jan.klein@hm.edu) to Mia Hoffmann (mia.hoffmann@lmu.de) - Status: accepted
+-- INSERT INTO friendship_invites (requester_id, requestee_id, status, created_at) VALUES ('[REQUESTER_UUID_22]', '[REQUESTEE_UUID_22]', 'accepted', '2025-09-07T14:05:05.839Z');
+-- Invite from Lisa Peters (lisa.peters@hm.edu) to Jan Klein (jan.klein@hm.edu) - Status: pending
+-- INSERT INTO friendship_invites (requester_id, requestee_id, status, created_at) VALUES ('[REQUESTER_UUID_23]', '[REQUESTEE_UUID_23]', 'pending', '2025-09-13T19:26:37.440Z');
+-- Invite from Marco Braun (marco.braun@hm.edu) to David Fischer (david.fischer@tum.de) - Status: pending
+-- INSERT INTO friendship_invites (requester_id, requestee_id, status, created_at) VALUES ('[REQUESTER_UUID_24]', '[REQUESTEE_UUID_24]', 'pending', '2025-09-13T20:44:49.575Z');
+-- Invite from Marco Braun (marco.braun@hm.edu) to Leon Becker (leon.becker@tum.de) - Status: pending
+-- INSERT INTO friendship_invites (requester_id, requestee_id, status, created_at) VALUES ('[REQUESTER_UUID_25]', '[REQUESTEE_UUID_25]', 'pending', '2025-09-14T02:46:47.109Z');
+-- Invite from Elena García (elena.garcia@tum.de) to Max Müller (max.mueller@tum.de) - Status: rejected
+-- INSERT INTO friendship_invites (requester_id, requestee_id, status, created_at) VALUES ('[REQUESTER_UUID_26]', '[REQUESTEE_UUID_26]', 'rejected', '2025-09-07T16:57:53.812Z');
+-- Invite from Ahmed Hassan (ahmed.hassan@lmu.de) to Julia Weber (julia.weber@tum.de) - Status: pending
+-- INSERT INTO friendship_invites (requester_id, requestee_id, status, created_at) VALUES ('[REQUESTER_UUID_27]', '[REQUESTEE_UUID_27]', 'pending', '2025-09-13T22:38:58.261Z');
+-- Invite from Yuki Tanaka (yuki.tanaka@tum.de) to Leon Becker (leon.becker@tum.de) - Status: pending
+-- INSERT INTO friendship_invites (requester_id, requestee_id, status, created_at) VALUES ('[REQUESTER_UUID_28]', '[REQUESTEE_UUID_28]', 'pending', '2025-09-16T21:10:11.648Z');
+-- Invite from Yuki Tanaka (yuki.tanaka@tum.de) to Noah Zimmermann (noah.zimmermann@lmu.de) - Status: pending
+-- INSERT INTO friendship_invites (requester_id, requestee_id, status, created_at) VALUES ('[REQUESTER_UUID_29]', '[REQUESTEE_UUID_29]', 'pending', '2025-09-13T22:57:56.874Z');

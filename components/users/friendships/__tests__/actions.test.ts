@@ -1,9 +1,5 @@
-import {
-  createFriendshipInvite,
-  getFriendshipInvites,
-  acceptFriendshipInvite,
-  getFriendships,
-} from "../actions";
+import { createFriendshipInvite, acceptFriendshipInvite } from "../actions";
+import { getFriendshipInvites, getFriendships } from "../data";
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 

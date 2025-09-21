@@ -7,7 +7,11 @@
     "lint": "next lint",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "seed": "node scripts/seed-database.js",
+    "seed-enhanced": "node scripts/seed-enhanced.js",
+    "generate-dummy-data": "node scripts/generate-dummy-data.js",
+    "setup-dummy-data": "node scripts/setup-dummy-data.js"
   },
   "dependencies": {
     "@radix-ui/react-checkbox": "^1.3.1",
@@ -18,6 +22,7 @@
     "@supabase/supabase-js": "latest",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "dotenv": "^17.2.2",
     "lucide-react": "^0.511.0",
     "next": "latest",
     "next-themes": "^0.4.6",

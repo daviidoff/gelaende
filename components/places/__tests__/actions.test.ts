@@ -22,6 +22,7 @@ describe("Places Actions", () => {
       },
       from: jest.fn(() => ({
         select: jest.fn().mockReturnThis(),
+        ilike: jest.fn().mockReturnThis(),
         order: jest.fn().mockReturnThis(),
       })),
     };
@@ -60,6 +61,7 @@ describe("Places Actions", () => {
       // Mock successful places fetch
       const mockPlacesChain = {
         select: jest.fn().mockReturnThis(),
+        ilike: jest.fn().mockReturnThis(),
         order: jest.fn().mockResolvedValue({
           data: mockPlaces,
           error: null,
@@ -80,10 +82,161 @@ describe("Places Actions", () => {
       expect(mockPlacesChain.order).toHaveBeenCalledWith("name");
     });
 
+    it("should successfully retrieve places with search term", async () => {
+      const searchTerm = "Central";
+      const filteredPlaces = [mockPlaces[0]]; // Only Central Park matches
+
+      // Mock successful places fetch with search
+      const mockPlacesChain = {
+        select: jest.fn().mockReturnThis(),
+        ilike: jest.fn().mockReturnThis(),
+        order: jest.fn().mockResolvedValue({
+          data: filteredPlaces,
+          error: null,
+        }),
+      };
+      mockSupabaseClient.from.mockReturnValue(mockPlacesChain);
+
+      const result = await getPlaces(searchTerm);
+
+      expect(result).toEqual({
+        success: true,
+        message: "Places retrieved successfully",
+        places: filteredPlaces,
+      });
+
+      expect(mockSupabaseClient.from).toHaveBeenCalledWith("places");
+      expect(mockPlacesChain.select).toHaveBeenCalledWith("*");
+      expect(mockPlacesChain.ilike).toHaveBeenCalledWith(
+        "name",
+        `%${searchTerm}%`
+      );
+      expect(mockPlacesChain.order).toHaveBeenCalledWith("name");
+    });
+
+    it("should retrieve all places when search term is empty string", async () => {
+      const searchTerm = "";
+
+      // Mock successful places fetch without search (should not use ilike)
+      const mockPlacesChain = {
+        select: jest.fn().mockReturnThis(),
+        ilike: jest.fn().mockReturnThis(),
+        order: jest.fn().mockResolvedValue({
+          data: mockPlaces,
+          error: null,
+        }),
+      };
+      mockSupabaseClient.from.mockReturnValue(mockPlacesChain);
+
+      const result = await getPlaces(searchTerm);
+
+      expect(result).toEqual({
+        success: true,
+        message: "Places retrieved successfully",
+        places: mockPlaces,
+      });
+
+      expect(mockSupabaseClient.from).toHaveBeenCalledWith("places");
+      expect(mockPlacesChain.select).toHaveBeenCalledWith("*");
+      expect(mockPlacesChain.order).toHaveBeenCalledWith("name");
+      // Should not call ilike for empty search term
+      expect(mockPlacesChain.ilike).not.toHaveBeenCalled();
+    });
+
+    it("should retrieve all places when search term is only whitespace", async () => {
+      const searchTerm = "   ";
+
+      // Mock successful places fetch without search (should not use ilike)
+      const mockPlacesChain = {
+        select: jest.fn().mockReturnThis(),
+        ilike: jest.fn().mockReturnThis(),
+        order: jest.fn().mockResolvedValue({
+          data: mockPlaces,
+          error: null,
+        }),
+      };
+      mockSupabaseClient.from.mockReturnValue(mockPlacesChain);
+
+      const result = await getPlaces(searchTerm);
+
+      expect(result).toEqual({
+        success: true,
+        message: "Places retrieved successfully",
+        places: mockPlaces,
+      });
+
+      expect(mockSupabaseClient.from).toHaveBeenCalledWith("places");
+      expect(mockPlacesChain.select).toHaveBeenCalledWith("*");
+      expect(mockPlacesChain.order).toHaveBeenCalledWith("name");
+      // Should not call ilike for whitespace-only search term
+      expect(mockPlacesChain.ilike).not.toHaveBeenCalled();
+    });
+
+    it("should trim search term and search correctly", async () => {
+      const searchTerm = "  Central  ";
+      const filteredPlaces = [mockPlaces[0]];
+
+      // Mock successful places fetch with search
+      const mockPlacesChain = {
+        select: jest.fn().mockReturnThis(),
+        ilike: jest.fn().mockReturnThis(),
+        order: jest.fn().mockResolvedValue({
+          data: filteredPlaces,
+          error: null,
+        }),
+      };
+      mockSupabaseClient.from.mockReturnValue(mockPlacesChain);
+
+      const result = await getPlaces(searchTerm);
+
+      expect(result).toEqual({
+        success: true,
+        message: "Places retrieved successfully",
+        places: filteredPlaces,
+      });
+
+      expect(mockSupabaseClient.from).toHaveBeenCalledWith("places");
+      expect(mockPlacesChain.select).toHaveBeenCalledWith("*");
+      expect(mockPlacesChain.ilike).toHaveBeenCalledWith("name", "%Central%");
+      expect(mockPlacesChain.order).toHaveBeenCalledWith("name");
+    });
+
+    it("should return empty array when search returns no results", async () => {
+      const searchTerm = "NonexistentPlace";
+
+      // Mock empty search results
+      const mockPlacesChain = {
+        select: jest.fn().mockReturnThis(),
+        ilike: jest.fn().mockReturnThis(),
+        order: jest.fn().mockResolvedValue({
+          data: [],
+          error: null,
+        }),
+      };
+      mockSupabaseClient.from.mockReturnValue(mockPlacesChain);
+
+      const result = await getPlaces(searchTerm);
+
+      expect(result).toEqual({
+        success: true,
+        message: "Places retrieved successfully",
+        places: [],
+      });
+
+      expect(mockSupabaseClient.from).toHaveBeenCalledWith("places");
+      expect(mockPlacesChain.select).toHaveBeenCalledWith("*");
+      expect(mockPlacesChain.ilike).toHaveBeenCalledWith(
+        "name",
+        `%${searchTerm}%`
+      );
+      expect(mockPlacesChain.order).toHaveBeenCalledWith("name");
+    });
+
     it("should return empty array when no places exist", async () => {
       // Mock empty places response
       const mockPlacesChain = {
         select: jest.fn().mockReturnThis(),
+        ilike: jest.fn().mockReturnThis(),
         order: jest.fn().mockResolvedValue({
           data: [],
           error: null,
@@ -104,6 +257,7 @@ describe("Places Actions", () => {
       // Mock null data response
       const mockPlacesChain = {
         select: jest.fn().mockReturnThis(),
+        ilike: jest.fn().mockReturnThis(),
         order: jest.fn().mockResolvedValue({
           data: null,
           error: null,
@@ -156,6 +310,7 @@ describe("Places Actions", () => {
       // Mock database error
       const mockPlacesChain = {
         select: jest.fn().mockReturnThis(),
+        ilike: jest.fn().mockReturnThis(),
         order: jest.fn().mockResolvedValue({
           data: null,
           error: { message: "Database error", code: "PGRST116" },
@@ -208,6 +363,7 @@ describe("Places Actions", () => {
     it("should order places by name", async () => {
       const mockPlacesChain = {
         select: jest.fn().mockReturnThis(),
+        ilike: jest.fn().mockReturnThis(),
         order: jest.fn().mockResolvedValue({
           data: mockPlaces,
           error: null,

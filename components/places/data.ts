@@ -12,10 +12,11 @@ export interface GetPlacesResult {
 }
 
 /**
- * Retrieves all places from the database
+ * Retrieves places from the database with optional search
+ * @param searchTerm Optional search term to filter places by name
  * @returns Promise with success status, message, and places array
  */
-export async function getPlaces(): Promise<GetPlacesResult> {
+export async function getPlaces(searchTerm?: string): Promise<GetPlacesResult> {
   try {
     const supabase = await createClient();
 
@@ -32,11 +33,14 @@ export async function getPlaces(): Promise<GetPlacesResult> {
       };
     }
 
-    // Fetch all places from the database
-    const { data: places, error: placesError } = await supabase
-      .from("places")
-      .select("*")
-      .order("name");
+    // Build query with optional search
+    let query = supabase.from("places").select("*");
+
+    if (searchTerm && searchTerm.trim()) {
+      query = query.ilike("name", `%${searchTerm.trim()}%`);
+    }
+
+    const { data: places, error: placesError } = await query.order("name");
 
     if (placesError) {
       console.error("Error fetching places:", placesError);

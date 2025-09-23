@@ -15,6 +15,7 @@ const mockRevalidatePath = revalidatePath as jest.MockedFunction<
 >;
 
 describe("Friendship Invite Actions", () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let mockSupabaseClient: any;
 
   beforeEach(() => {
@@ -357,35 +358,36 @@ describe("Friendship Invite Actions", () => {
     });
 
     it("should successfully fetch friendship invites", async () => {
-      const mockReceivedInvites = [
-        {
-          invite_id: "invite-1",
-          requester_id: "user-456",
-          status: "pending",
-          created_at: "2025-09-19T10:00:00Z",
-          requester_profile: {
-            profile_id: "profile-456",
-            name: "John Doe",
-            studiengang: "Computer Science",
-            university: "TU Munich",
-          },
-        },
-      ];
+      // Commented out unused mock data to suppress warnings
+      // const _mockReceivedInvites = [
+      //   {
+      //     invite_id: "invite-1",
+      //     requester_id: "user-456",
+      //     status: "pending",
+      //     created_at: "2025-09-19T10:00:00Z",
+      //     requester_profile: {
+      //       profile_id: "profile-456",
+      //       name: "John Doe",
+      //       studiengang: "Computer Science",
+      //       university: "TU Munich",
+      //     },
+      //   },
+      // ];
 
-      const mockSentInvites = [
-        {
-          invite_id: "invite-2",
-          requestee_id: "user-789",
-          status: "pending",
-          created_at: "2025-09-19T11:00:00Z",
-          requestee_profile: {
-            profile_id: "profile-789",
-            name: "Jane Smith",
-            studiengang: "Mathematics",
-            university: "LMU Munich",
-          },
-        },
-      ];
+      // const _mockSentInvites = [
+      //   {
+      //     invite_id: "invite-2",
+      //     requestee_id: "user-789",
+      //     status: "pending",
+      //     created_at: "2025-09-19T11:00:00Z",
+      //     requestee_profile: {
+      //       profile_id: "profile-789",
+      //       name: "Jane Smith",
+      //       studiengang: "Mathematics",
+      //       university: "LMU Munich",
+      //     },
+      //   },
+      // ];
 
       // Mock received invites query
       const mockReceivedChain = {

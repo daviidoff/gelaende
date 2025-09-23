@@ -15,6 +15,7 @@ const mockRevalidatePath = revalidatePath as jest.MockedFunction<
 >;
 
 describe("User Places Actions", () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let mockSupabaseClient: any;
 
   beforeEach(() => {

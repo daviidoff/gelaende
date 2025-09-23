@@ -172,9 +172,9 @@ function randomChoice<T>(array: T[]): T {
   return array[Math.floor(Math.random() * array.length)];
 }
 
-function randomId(): string {
-  return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-}
+// function randomId(): string {
+//   return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+// }
 
 function randomUUID(): string {
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
@@ -208,13 +208,13 @@ function randomPastDate(daysBack: number = 30): string {
   return pastDate.toISOString();
 }
 
-function randomFutureDate(daysAhead: number = 7): string {
-  const now = new Date();
-  const futureDate = new Date(
-    now.getTime() + Math.random() * daysAhead * 24 * 60 * 60 * 1000
-  );
-  return futureDate.toISOString();
-}
+// function randomFutureDate(daysAhead: number = 7): string {
+//   const now = new Date();
+//   const futureDate = new Date(
+//     now.getTime() + Math.random() * daysAhead * 24 * 60 * 60 * 1000
+//   );
+//   return futureDate.toISOString();
+// }
 
 // Main factory functions
 export function createTestUser(overrides: Partial<TestUser> = {}): TestUser {

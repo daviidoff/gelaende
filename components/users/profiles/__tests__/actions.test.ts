@@ -9,6 +9,7 @@ const mockCreateClient = createClient as jest.MockedFunction<
 >;
 
 describe("Profile Actions", () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let mockSupabaseClient: any;
 
   beforeEach(() => {

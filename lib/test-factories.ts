@@ -17,15 +17,27 @@ import {
   type TestFriendshipInvite,
 } from "../lib/test-data";
 
+// Mock Supabase error type
+export interface MockSupabaseError {
+  message: string;
+  code?: string;
+  details?: string | null;
+  hint?: string | null;
+}
+
+// Mock client type for testing
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type MockSupabaseClient = jest.Mocked<any>;
+
 // Mock Supabase response types
 export interface MockSupabaseResponse<T> {
   data: T | null;
-  error: any;
+  error: MockSupabaseError | null;
 }
 
 export interface MockSupabaseListResponse<T> {
   data: T[] | null;
-  error: any;
+  error: MockSupabaseError | null;
 }
 
 // Factory for creating mock Supabase client responses
@@ -50,7 +62,7 @@ export class MockSupabaseFactory {
   static errorResponse(
     message: string,
     code?: string
-  ): MockSupabaseResponse<any> {
+  ): MockSupabaseResponse<null> {
     return {
       data: null,
       error: {
@@ -291,7 +303,7 @@ export class TestHelpers {
    * Configures mock to return specific user data
    */
   static mockAuthUser(
-    mockClient: any,
+    mockClient: MockSupabaseClient,
     user?: ReturnType<typeof TestDataFactory.createAuthUser>
   ) {
     const authUser = user || TestDataFactory.createAuthUser();
@@ -305,7 +317,7 @@ export class TestHelpers {
   /**
    * Configures mock to return unauthenticated state
    */
-  static mockUnauthenticatedUser(mockClient: any) {
+  static mockUnauthenticatedUser(mockClient: MockSupabaseClient) {
     mockClient.auth.getUser.mockResolvedValue({
       data: { user: null },
       error: { message: "Not authenticated", code: "UNAUTHENTICATED" },
@@ -316,7 +328,7 @@ export class TestHelpers {
    * Configures mock to return friendship data
    */
   static mockFriendships(
-    mockClient: any,
+    mockClient: MockSupabaseClient,
     friendships: ReturnType<typeof TestDataFactory.createFriendship>[]
   ) {
     const mockQuery = mockClient.from().select();
@@ -330,7 +342,7 @@ export class TestHelpers {
    * Configures mock to return friendship invite data
    */
   static mockFriendshipInvites(
-    mockClient: any,
+    mockClient: MockSupabaseClient,
     invites: ReturnType<typeof TestDataFactory.createFriendshipInvite>[]
   ) {
     const mockQuery = mockClient.from().select();
@@ -344,7 +356,7 @@ export class TestHelpers {
    * Configures mock to return activity data
    */
   static mockActivities(
-    mockClient: any,
+    mockClient: MockSupabaseClient,
     activities: ReturnType<typeof TestDataFactory.createActivity>[]
   ) {
     const mockQuery = mockClient.from().select();
@@ -358,7 +370,7 @@ export class TestHelpers {
    * Configures mock to return profile data
    */
   static mockProfile(
-    mockClient: any,
+    mockClient: MockSupabaseClient,
     profile: ReturnType<typeof TestDataFactory.createProfile>
   ) {
     const mockQuery = mockClient.from().select();
@@ -371,7 +383,10 @@ export class TestHelpers {
   /**
    * Configures mock for successful insert operation
    */
-  static mockSuccessfulInsert(mockClient: any, returnData?: any) {
+  static mockSuccessfulInsert(
+    mockClient: MockSupabaseClient,
+    returnData?: unknown
+  ) {
     const mockQuery = mockClient.from().insert();
     mockQuery.mockResolvedValue(
       MockSupabaseFactory.successResponse(returnData || { id: "new-id" })
@@ -382,7 +397,10 @@ export class TestHelpers {
   /**
    * Configures mock for successful update operation
    */
-  static mockSuccessfulUpdate(mockClient: any, returnData?: any) {
+  static mockSuccessfulUpdate(
+    mockClient: MockSupabaseClient,
+    returnData?: unknown
+  ) {
     const mockQuery = mockClient.from().update();
     mockQuery.mockResolvedValue(
       MockSupabaseFactory.successResponse(returnData || { id: "updated-id" })
@@ -393,7 +411,11 @@ export class TestHelpers {
   /**
    * Configures mock for error response
    */
-  static mockError(mockClient: any, errorMessage: string, errorCode?: string) {
+  static mockError(
+    mockClient: MockSupabaseClient,
+    errorMessage: string,
+    errorCode?: string
+  ) {
     const mockQuery = mockClient.from().select();
     mockQuery.mockResolvedValue(
       MockSupabaseFactory.errorResponse(errorMessage, errorCode)

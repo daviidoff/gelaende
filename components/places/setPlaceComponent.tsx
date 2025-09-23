@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { getPlaces, getPlacesPaginated, GetPlacesParams } from "./data";
+import { getPlacesPaginated, GetPlacesParams } from "./data";
 import { getUserPlaces } from "@/components/users/places/data";
 import { setPlace } from "@/components/users/places/actions";
 import { PlaceCard, PlaceCardData } from "./PlaceCard";
@@ -13,16 +13,18 @@ import type { Database } from "@/lib/types/database";
 
 type Place = Database["public"]["Tables"]["places"]["Row"];
 
+// Interface for location data structure
+interface LocationData {
+  address?: string;
+  lat?: number;
+  lng?: number;
+}
+
 // Interface for the places data returned from getUserPlaces
 interface ActivityPlace {
   place_id: string;
   name: string;
-  location: any;
-}
-
-interface UserActivity {
-  time: string;
-  places: ActivityPlace | ActivityPlace[];
+  location: Database["public"]["Tables"]["places"]["Row"]["location"];
 }
 
 interface PaginationProps {
@@ -173,21 +175,29 @@ export default function SetPlaceComponent() {
   }, [searchTerm]);
 
   // Helper function to extract address from location data
-  const getAddressFromLocation = useCallback((location: any): string => {
-    if (!location) return "";
+  const getAddressFromLocation = useCallback(
+    (
+      location: Database["public"]["Tables"]["places"]["Row"]["location"]
+    ): string => {
+      if (!location) return "";
 
-    if (typeof location === "object") {
-      // If location has address property, use it
-      if (location.address) return location.address;
+      if (typeof location === "object" && !Array.isArray(location)) {
+        const locationData = location as LocationData;
+        // If location has address property, use it
+        if (locationData.address) return locationData.address;
 
-      // If location has coordinates, format them
-      if (location.lat && location.lng) {
-        return `${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}`;
+        // If location has coordinates, format them
+        if (locationData.lat && locationData.lng) {
+          return `${locationData.lat.toFixed(4)}, ${locationData.lng.toFixed(
+            4
+          )}`;
+        }
       }
-    }
 
-    return "";
-  }, []);
+      return "";
+    },
+    []
+  );
 
   // Convert Place or ActivityPlace to PlaceCardData
   const convertPlaceToCardData = useCallback(

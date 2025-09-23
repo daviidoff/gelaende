@@ -63,7 +63,7 @@ export default function ManageInvites() {
       } else {
         setMessage({ type: "error", text: result.message });
       }
-    } catch (error) {
+    } catch {
       setMessage({ type: "error", text: "Failed to load invites" });
     } finally {
       setLoading(false);
@@ -81,7 +81,7 @@ export default function ManageInvites() {
       } else {
         setMessage({ type: "error", text: result.message });
       }
-    } catch (error) {
+    } catch {
       setMessage({ type: "error", text: "Failed to accept invite" });
     } finally {
       setProcessingInvites((prev) => {

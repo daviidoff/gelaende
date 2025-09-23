@@ -2,7 +2,6 @@ import React from "react";
 import {
   getFriendsWithLastPlaces,
   getCurrentUserWithLastPlace,
-  FriendWithLastPlace,
 } from "@/components/users/friendships/data";
 import {
   FriendLocationCard,

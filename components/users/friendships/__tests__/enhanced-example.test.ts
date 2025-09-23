@@ -21,6 +21,7 @@ const mockCreateClient = createClient as jest.MockedFunction<
 >;
 
 describe("Friendship Actions - Enhanced Tests", () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let mockSupabaseClient: any;
 
   beforeEach(() => {

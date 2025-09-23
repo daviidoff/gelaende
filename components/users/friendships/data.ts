@@ -176,7 +176,13 @@ export async function getFriendshipInvites() {
       sentInvites?.map((invite) => invite.requestee_id) || [];
     const allUserIds = [...requesterIds, ...requesteeIds];
 
-    let profiles: any[] = [];
+    let profiles: {
+      profile_id: string;
+      name: string;
+      studiengang: string | null;
+      university: string | null;
+      user_id: string;
+    }[] = [];
     if (allUserIds.length > 0) {
       const { data: profilesData, error: profilesError } = await supabase
         .from("profiles")

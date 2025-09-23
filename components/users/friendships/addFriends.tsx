@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { createFriendshipInvite } from "./actions";
-import { searchUsers, SearchUsersResult } from "../actions";
+import { searchUsers } from "../actions";
 
 interface User {
   profile_id: string;
@@ -43,7 +43,7 @@ export default function AddFriends() {
         setErrorMessage(result.message);
         setSearchResults([]);
       }
-    } catch (error) {
+    } catch {
       setErrorMessage("An error occurred while searching");
       setSearchResults([]);
     } finally {
@@ -69,7 +69,7 @@ export default function AddFriends() {
           `Failed to send invite to ${userName}: ${result.message}`
         );
       }
-    } catch (error) {
+    } catch {
       setErrorMessage(`An error occurred while sending invite to ${userName}`);
     } finally {
       setSendingInvites((prev) => {
@@ -167,8 +167,10 @@ export default function AddFriends() {
         <p>💡 Tips:</p>
         <ul className="list-disc list-inside space-y-1 mt-2">
           <li>Enter at least 2 characters to search</li>
-          <li>You won't see users you're already friends with</li>
-          <li>Users with pending invites won't appear in search results</li>
+          <li>You won&apos;t see users you&apos;re already friends with</li>
+          <li>
+            Users with pending invites won&apos;t appear in search results
+          </li>
         </ul>
       </div>
     </div>

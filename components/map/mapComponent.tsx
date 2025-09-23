@@ -3,112 +3,7 @@ import {
   getFriendsWithLastPlaces,
   FriendWithLastPlace,
 } from "@/components/users/friendships/data";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
-// Utility function to format relative time
-function formatRelativeTime(timestamp: string): string {
-  const now = new Date();
-  const past = new Date(timestamp);
-
-  // Check if the past date is valid
-  if (isNaN(past.getTime())) {
-    return "Invalid date";
-  }
-
-  const diffInSeconds = Math.floor((now.getTime() - past.getTime()) / 1000);
-
-  // Handle future dates
-  if (diffInSeconds < 0) {
-    return "In the future";
-  }
-
-  if (diffInSeconds < 60) {
-    return "Just now";
-  }
-
-  const diffInMinutes = Math.floor(diffInSeconds / 60);
-  if (diffInMinutes < 60) {
-    return `${diffInMinutes} minute${diffInMinutes === 1 ? "" : "s"} ago`;
-  }
-
-  const diffInHours = Math.floor(diffInMinutes / 60);
-  if (diffInHours < 24) {
-    return `${diffInHours} hour${diffInHours === 1 ? "" : "s"} ago`;
-  }
-
-  const diffInDays = Math.floor(diffInHours / 24);
-  if (diffInDays < 7) {
-    return `${diffInDays} day${diffInDays === 1 ? "" : "s"} ago`;
-  }
-
-  const diffInWeeks = Math.floor(diffInDays / 7);
-  if (diffInWeeks < 4) {
-    return `${diffInWeeks} week${diffInWeeks === 1 ? "" : "s"} ago`;
-  }
-
-  const diffInMonths = Math.floor(diffInDays / 30);
-  return `${diffInMonths} month${diffInMonths === 1 ? "" : "s"} ago`;
-}
-
-// Function to get place name from the lastPlace data
-function getPlaceName(lastPlace: FriendWithLastPlace["lastPlace"]): string {
-  if (!lastPlace || !lastPlace.places) {
-    return "Location unknown";
-  }
-
-  if (Array.isArray(lastPlace.places)) {
-    return lastPlace.places.map((place) => place.name).join(", ");
-  } else {
-    return lastPlace.places.name;
-  }
-}
-
-// Friend location card component
-function FriendLocationCard({ friend }: { friend: FriendWithLastPlace }) {
-  const placeName = getPlaceName(friend.lastPlace);
-  const timeAgo = friend.lastPlace?.time
-    ? formatRelativeTime(friend.lastPlace.time)
-    : "No recent activity";
-
-  return (
-    <Card className="w-full transition-all hover:shadow-lg border-l-4 border-l-blue-500">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-lg font-semibold flex items-center justify-between">
-          <span>{friend.name}</span>
-          <span className="text-sm font-normal text-muted-foreground">
-            {timeAgo}
-          </span>
-        </CardTitle>
-        {(friend.studiengang || friend.university) && (
-          <p className="text-sm text-muted-foreground">
-            {friend.studiengang}
-            {friend.studiengang && friend.university && " • "}
-            {friend.university}
-          </p>
-        )}
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-600 text-xs font-medium">
-              📍
-            </span>
-            <div className="flex-1">
-              <span className="text-sm font-medium text-gray-900">
-                {placeName}
-              </span>
-            </div>
-          </div>
-          {friend.lastPlace?.time && (
-            <div className="text-xs text-muted-foreground ml-8">
-              Last updated: {new Date(friend.lastPlace.time).toLocaleString()}
-            </div>
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
+import { FriendLocationCard, NoActivityCard } from "@/components/map/mapCard";
 
 // Main Map Component
 export default async function MapComponent() {
@@ -116,11 +11,16 @@ export default async function MapComponent() {
 
   if (!friendsResult.success || !friendsResult.data) {
     return (
-      <div className="w-full p-6">
-        <div className="text-center">
-          <h2 className="text-xl font-semibold mb-4">Friends Map</h2>
-          <div className="text-muted-foreground">
-            <p>{friendsResult.message || "Failed to load friends locations"}</p>
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6 flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-r from-red-500/20 to-orange-500/20 flex items-center justify-center text-3xl border border-red-500/30">
+            ⚠️
+          </div>
+          <h2 className="text-2xl font-bold text-white">Friends Map</h2>
+          <div className="text-slate-400 max-w-md">
+            <p className="text-lg">
+              {friendsResult.message || "Failed to load friends locations"}
+            </p>
           </div>
         </div>
       </div>
@@ -142,21 +42,33 @@ export default async function MapComponent() {
   );
 
   return (
-    <div className="w-full p-6 space-y-6">
-      <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold mb-2">Friends Map</h2>
-        <p className="text-muted-foreground">
-          See where your friends were last spotted, sorted by most recent
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6 space-y-8">
+      {/* Hero Header Section */}
+      <div className="text-center mb-8">
+        <div className="relative inline-block">
+          <h2 className="text-4xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-teal-400 bg-clip-text text-transparent mb-4">
+            Friends Map
+          </h2>
+          <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-teal-500/20 blur-lg -z-10" />
+        </div>
+        <p className="text-slate-400 text-lg max-w-2xl mx-auto">
+          Discover where your friends were last spotted, sorted by most recent
           activity
         </p>
       </div>
 
       {friendsWithActivities.length > 0 && (
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-700 border-b pb-2">
-            Recent Activity ({friendsWithActivities.length})
-          </h3>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="space-y-6">
+          <div className="flex items-center gap-3">
+            <div className="w-2 h-8 bg-gradient-to-b from-emerald-400 to-teal-500 rounded-full shadow-lg" />
+            <h3 className="text-xl font-bold text-white">
+              Recent Activity
+              <span className="ml-2 text-sm font-medium px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                {friendsWithActivities.length}
+              </span>
+            </h3>
+          </div>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {friendsWithActivities.map((friend) => (
               <FriendLocationCard key={friend.profile_id} friend={friend} />
             ))}
@@ -165,46 +77,36 @@ export default async function MapComponent() {
       )}
 
       {friendsWithoutActivities.length > 0 && (
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-500 border-b pb-2">
-            No Recent Activity ({friendsWithoutActivities.length})
-          </h3>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="space-y-6">
+          <div className="flex items-center gap-3">
+            <div className="w-2 h-8 bg-gradient-to-b from-slate-500 to-slate-600 rounded-full shadow-lg opacity-60" />
+            <h3 className="text-xl font-bold text-slate-400">
+              No Recent Activity
+              <span className="ml-2 text-sm font-medium px-3 py-1 rounded-full bg-slate-500/20 text-slate-500 border border-slate-500/30">
+                {friendsWithoutActivities.length}
+              </span>
+            </h3>
+          </div>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {friendsWithoutActivities.map((friend) => (
-              <Card key={friend.profile_id} className="w-full opacity-60">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-lg font-semibold">
-                    {friend.name}
-                  </CardTitle>
-                  {(friend.studiengang || friend.university) && (
-                    <p className="text-sm text-muted-foreground">
-                      {friend.studiengang}
-                      {friend.studiengang && friend.university && " • "}
-                      {friend.university}
-                    </p>
-                  )}
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 text-gray-400 text-xs">
-                      📍
-                    </span>
-                    <span className="text-sm">No recent activity</span>
-                  </div>
-                </CardContent>
-              </Card>
+              <NoActivityCard key={friend.profile_id} friend={friend} />
             ))}
           </div>
         </div>
       )}
 
       {sortedFriends.length === 0 && (
-        <div className="text-center py-12">
-          <div className="text-muted-foreground">
-            <p className="text-lg mb-2">No friends to show</p>
-            <p className="text-sm">
-              Add some friends to see their locations on the map!
-            </p>
+        <div className="text-center py-20">
+          <div className="relative">
+            <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-r from-slate-700 to-slate-800 flex items-center justify-center text-4xl opacity-60">
+              👥
+            </div>
+            <div className="text-slate-400 space-y-2">
+              <p className="text-2xl font-semibold">No friends to show</p>
+              <p className="text-lg">
+                Add some friends to see their locations on the map!
+              </p>
+            </div>
           </div>
         </div>
       )}

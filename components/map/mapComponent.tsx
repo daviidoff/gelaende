@@ -4,7 +4,11 @@ import {
   getCurrentUserWithLastPlace,
   FriendWithLastPlace,
 } from "@/components/users/friendships/data";
-import { FriendLocationCard, NoActivityCard, UserLocationCard } from "@/components/map/mapCard";
+import {
+  FriendLocationCard,
+  NoActivityCard,
+  UserLocationCard,
+} from "@/components/map/mapCard";
 
 // Main Map Component
 export default async function MapComponent() {

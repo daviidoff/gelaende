@@ -182,11 +182,7 @@ export function NoActivityCard({ friend }: { friend: FriendWithLastPlace }) {
 }
 
 // Card for the current user with change place button
-export function UserLocationCard({
-  user,
-}: {
-  user: FriendWithLastPlace;
-}) {
+export function UserLocationCard({ user }: { user: FriendWithLastPlace }) {
   const placeName = getPlaceName(user.lastPlace);
   const timeAgo = user.lastPlace?.time
     ? formatRelativeTime(user.lastPlace.time)
@@ -235,10 +231,10 @@ export function UserLocationCard({
                 </span>
               </div>
             </div>
-            
+
             {/* Change Place Button */}
             <Link href="/map/setPlace" className="block">
-              <Button 
+              <Button
                 className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
                 size="sm"
               >
@@ -246,7 +242,7 @@ export function UserLocationCard({
                 Change Place
               </Button>
             </Link>
-            
+
             {user.lastPlace?.time && (
               <div className="text-xs text-indigo-400 group-hover:text-indigo-300 transition-colors">
                 Last updated: {new Date(user.lastPlace.time).toLocaleString()}

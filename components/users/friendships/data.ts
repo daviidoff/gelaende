@@ -290,7 +290,9 @@ export async function getCurrentUserWithLastPlace(): Promise<GetCurrentUserWithL
     // Get user's profile
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
-      .select("profile_id, name, studiengang, university, user_id, created_at, updated_at")
+      .select(
+        "profile_id, name, studiengang, university, user_id, created_at, updated_at"
+      )
       .eq("user_id", userId)
       .single();
 

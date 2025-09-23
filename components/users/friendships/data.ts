@@ -252,10 +252,80 @@ export interface FriendWithLastPlace {
   lastPlace: Activity | null;
 }
 
+export interface GetCurrentUserWithLastPlaceResult {
+  success: boolean;
+  message: string;
+  data?: FriendWithLastPlace;
+}
+
 export interface GetFriendsWithLastPlacesResult {
   success: boolean;
   message: string;
   data?: FriendWithLastPlace[];
+}
+
+/**
+ * Fetches the current user's profile and their last visited place
+ * @returns Promise with success status, message, and user data with last place
+ */
+export async function getCurrentUserWithLastPlace(): Promise<GetCurrentUserWithLastPlaceResult> {
+  try {
+    const supabase = await createClient();
+
+    // Get the current user
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return {
+        success: false,
+        message: "Authentication required",
+      };
+    }
+
+    const userId = user.id;
+
+    // Get user's profile
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("profile_id, name, studiengang, university, user_id, created_at, updated_at")
+      .eq("user_id", userId)
+      .single();
+
+    if (profileError) {
+      console.error("Error fetching user profile:", profileError);
+      return {
+        success: false,
+        message: "Failed to fetch user profile",
+      };
+    }
+
+    // Get user's last place
+    const lastPlaceResult = await getCurrentPlace(userId);
+
+    const userWithLastPlace: FriendWithLastPlace = {
+      ...profile,
+      friendship_created_at: profile.created_at, // Use profile created_at as friendship date
+      lastPlace:
+        lastPlaceResult.success && lastPlaceResult.activity
+          ? lastPlaceResult.activity
+          : null,
+    };
+
+    return {
+      success: true,
+      message: "Current user with last place fetched successfully",
+      data: userWithLastPlace,
+    };
+  } catch (error) {
+    console.error("Unexpected error in getCurrentUserWithLastPlace:", error);
+    return {
+      success: false,
+      message: "An unexpected error occurred",
+    };
+  }
 }
 
 /**

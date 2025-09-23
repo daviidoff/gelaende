@@ -1,5 +1,7 @@
 import React from "react";
+import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { FriendWithLastPlace } from "@/components/users/friendships/data";
 
 // Utility function to format relative time
@@ -172,6 +174,84 @@ export function NoActivityCard({ friend }: { friend: FriendWithLastPlace }) {
             <span className="text-sm text-slate-500 group-hover:text-slate-400 transition-colors">
               No recent activity
             </span>
+          </div>
+        </CardContent>
+      </div>
+    </Card>
+  );
+}
+
+// Card for the current user with change place button
+export function UserLocationCard({
+  user,
+}: {
+  user: FriendWithLastPlace;
+}) {
+  const placeName = getPlaceName(user.lastPlace);
+  const timeAgo = user.lastPlace?.time
+    ? formatRelativeTime(user.lastPlace.time)
+    : "No recent activity";
+
+  const gradientClass = getTimeGradient(user.lastPlace?.time);
+
+  return (
+    <Card className="group relative overflow-hidden bg-gradient-to-br from-indigo-900/90 to-purple-900/90 border-indigo-500/50 hover:border-indigo-400/70 transition-all duration-300 hover:shadow-2xl hover:shadow-indigo-500/20 hover:-translate-y-1">
+      {/* Special gradient overlay for current user */}
+      <div
+        className={`absolute inset-0 bg-gradient-to-br ${gradientClass} opacity-60 group-hover:opacity-80 transition-opacity duration-300`}
+      />
+
+      {/* Animated border effect */}
+      <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-indigo-500/30 via-purple-500/30 to-pink-500/30 opacity-70 group-hover:opacity-100 transition-opacity duration-300 blur-sm" />
+
+      <div className="relative z-10">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg font-bold flex items-center justify-between text-white group-hover:text-indigo-100 transition-colors">
+            <span className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-gradient-to-r from-indigo-400 to-purple-500 shadow-lg shadow-indigo-500/40 animate-pulse" />
+              {user.name} (You)
+            </span>
+            <span className="text-xs font-medium px-2 py-1 rounded-full bg-indigo-800/60 text-indigo-200 border border-indigo-500/50">
+              {timeAgo}
+            </span>
+          </CardTitle>
+          {(user.studiengang || user.university) && (
+            <p className="text-sm text-indigo-300 group-hover:text-indigo-200 transition-colors">
+              {user.studiengang}
+              {user.studiengang && user.university && " • "}
+              {user.university}
+            </p>
+          )}
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
+                <span className="text-sm">📍</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <span className="text-sm font-semibold text-white group-hover:text-indigo-100 transition-colors block truncate">
+                  {placeName}
+                </span>
+              </div>
+            </div>
+            
+            {/* Change Place Button */}
+            <Link href="/map/setPlace" className="block">
+              <Button 
+                className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                size="sm"
+              >
+                <span className="mr-2">📍</span>
+                Change Place
+              </Button>
+            </Link>
+            
+            {user.lastPlace?.time && (
+              <div className="text-xs text-indigo-400 group-hover:text-indigo-300 transition-colors">
+                Last updated: {new Date(user.lastPlace.time).toLocaleString()}
+              </div>
+            )}
           </div>
         </CardContent>
       </div>

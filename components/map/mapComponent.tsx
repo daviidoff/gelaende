@@ -1,14 +1,20 @@
 import React from "react";
 import {
   getFriendsWithLastPlaces,
+  getCurrentUserWithLastPlace,
   FriendWithLastPlace,
 } from "@/components/users/friendships/data";
-import { FriendLocationCard, NoActivityCard } from "@/components/map/mapCard";
+import { FriendLocationCard, NoActivityCard, UserLocationCard } from "@/components/map/mapCard";
 
 // Main Map Component
 export default async function MapComponent() {
-  const friendsResult = await getFriendsWithLastPlaces();
+  // Fetch both current user and friends data
+  const [currentUserResult, friendsResult] = await Promise.all([
+    getCurrentUserWithLastPlace(),
+    getFriendsWithLastPlaces(),
+  ]);
 
+  // Handle errors for friends data
   if (!friendsResult.success || !friendsResult.data) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6 flex items-center justify-center">
@@ -57,17 +63,17 @@ export default async function MapComponent() {
         </p>
       </div>
 
+      {/* Current User Section */}
+      {currentUserResult.success && currentUserResult.data && (
+        <div className="flex justify-center">
+          <div className="w-full max-w-md">
+            <UserLocationCard user={currentUserResult.data} />
+          </div>
+        </div>
+      )}
+
       {friendsWithActivities.length > 0 && (
         <div className="space-y-6">
-          <div className="flex items-center gap-3">
-            <div className="w-2 h-8 bg-gradient-to-b from-emerald-400 to-teal-500 rounded-full shadow-lg" />
-            <h3 className="text-xl font-bold text-white">
-              Recent Activity
-              <span className="ml-2 text-sm font-medium px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                {friendsWithActivities.length}
-              </span>
-            </h3>
-          </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {friendsWithActivities.map((friend) => (
               <FriendLocationCard key={friend.profile_id} friend={friend} />

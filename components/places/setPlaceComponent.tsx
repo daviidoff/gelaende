@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { getPlaces, getPlacesPaginated, GetPlacesParams } from "./data";
@@ -69,6 +70,7 @@ function Pagination({
 }
 
 export default function SetPlaceComponent() {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [recentPlaces, setRecentPlaces] = useState<PlaceCardData[]>([]);
@@ -271,8 +273,8 @@ export default function SetPlaceComponent() {
     try {
       const result = await setPlace(placeId);
       if (result.success) {
-        // Could show a success message or navigate away
-        console.log("Place set successfully");
+        // Redirect to map page after successfully setting the place
+        router.push("/map");
       } else {
         console.error("Failed to set place:", result.error);
         // Reset selection on error

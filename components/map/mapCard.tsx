@@ -1,11 +1,12 @@
 import React from "react";
 import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { MapPin } from "lucide-react";
 import { FriendWithLastPlace } from "@/components/users/friendships/data";
 
-// Utility function to format relative time
-function formatRelativeTime(timestamp: string): string {
+// BeReal-style time formatting function
+function formatBeRealTime(timestamp: string): string {
   const now = new Date();
   const past = new Date(timestamp);
 
@@ -21,32 +22,39 @@ function formatRelativeTime(timestamp: string): string {
     return "In the future";
   }
 
-  if (diffInSeconds < 60) {
-    return "Just now";
-  }
-
   const diffInMinutes = Math.floor(diffInSeconds / 60);
-  if (diffInMinutes < 60) {
-    return `${diffInMinutes} minute${diffInMinutes === 1 ? "" : "s"} ago`;
-  }
-
   const diffInHours = Math.floor(diffInMinutes / 60);
-  if (diffInHours < 24) {
-    return `${diffInHours} hour${diffInHours === 1 ? "" : "s"} ago`;
+
+  // Less than 1 hour: show "X min ago"
+  if (diffInHours < 1) {
+    if (diffInMinutes < 1) {
+      return "Just now";
+    }
+    return `${diffInMinutes} min ago`;
   }
 
-  const diffInDays = Math.floor(diffInHours / 24);
-  if (diffInDays < 7) {
-    return `${diffInDays} day${diffInDays === 1 ? "" : "s"} ago`;
+  // Check if it's the same day
+  const nowDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const pastDate = new Date(
+    past.getFullYear(),
+    past.getMonth(),
+    past.getDate()
+  );
+
+  if (nowDate.getTime() === pastDate.getTime()) {
+    // Same day: show time in HH:MM format
+    return past.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
   }
 
-  const diffInWeeks = Math.floor(diffInDays / 7);
-  if (diffInWeeks < 4) {
-    return `${diffInWeeks} week${diffInWeeks === 1 ? "" : "s"} ago`;
-  }
-
-  const diffInMonths = Math.floor(diffInDays / 30);
-  return `${diffInMonths} month${diffInMonths === 1 ? "" : "s"} ago`;
+  // Different day: show date in MMM DD format
+  return past.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
 }
 
 // Function to get place name from the lastPlace data
@@ -62,195 +70,145 @@ function getPlaceName(lastPlace: FriendWithLastPlace["lastPlace"]): string {
   }
 }
 
-// Get time-based gradient color
-function getTimeGradient(timestamp?: string): string {
-  if (!timestamp) return "from-gray-500/20 to-gray-600/20";
-
-  const now = new Date();
-  const past = new Date(timestamp);
-  const diffInHours = Math.floor(
-    (now.getTime() - past.getTime()) / (1000 * 60 * 60)
-  );
-
-  if (diffInHours < 1) return "from-emerald-500/30 to-teal-500/30"; // Very recent - green
-  if (diffInHours < 6) return "from-blue-500/30 to-cyan-500/30"; // Recent - blue
-  if (diffInHours < 24) return "from-amber-500/30 to-orange-500/30"; // Hours ago - amber
-  if (diffInHours < 168) return "from-purple-500/30 to-pink-500/30"; // Days ago - purple
-  return "from-gray-500/20 to-slate-600/20"; // Old - gray
-}
-
-// Friend location card component with enhanced dark mode styling
+// Friend location card component with BeReal-style layout
 export function FriendLocationCard({
   friend,
 }: {
   friend: FriendWithLastPlace;
 }) {
   const placeName = getPlaceName(friend.lastPlace);
-  const timeAgo = friend.lastPlace?.time
-    ? formatRelativeTime(friend.lastPlace.time)
+  const timeDisplay = friend.lastPlace?.time
+    ? formatBeRealTime(friend.lastPlace.time)
     : "No recent activity";
 
-  const gradientClass = getTimeGradient(friend.lastPlace?.time);
-
   return (
-    <Card className="group relative overflow-hidden bg-gradient-to-br from-slate-900/90 to-slate-800/90 border-slate-700/50 hover:border-slate-600/70 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/10 hover:-translate-y-1">
-      {/* Gradient overlay */}
-      <div
-        className={`absolute inset-0 bg-gradient-to-br ${gradientClass} opacity-50 group-hover:opacity-70 transition-opacity duration-300`}
-      />
+    <div className="space-y-3">
+      {/* BeReal-style user header */}
+      <div className="flex items-center gap-3">
+        {/* Profile picture placeholder */}
+        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-semibold text-lg shadow-lg">
+          {friend.name.charAt(0).toUpperCase()}
+        </div>
 
-      {/* Animated border effect */}
-      <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-teal-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-sm" />
-
-      <div className="relative z-10">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg font-bold flex items-center justify-between text-white group-hover:text-blue-100 transition-colors">
-            <span className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-gradient-to-r from-emerald-400 to-teal-500 shadow-lg shadow-emerald-500/30" />
+        {/* Name and time */}
+        <div className="flex-1">
+          <div className="flex items-center gap-2">
+            <h3 className="font-semibold text-white text-base">
               {friend.name}
-            </span>
-            <span className="text-xs font-medium px-2 py-1 rounded-full bg-slate-800/60 text-slate-300 border border-slate-600/50">
-              {timeAgo}
-            </span>
-          </CardTitle>
-          {(friend.studiengang || friend.university) && (
-            <p className="text-sm text-slate-400 group-hover:text-slate-300 transition-colors">
-              {friend.studiengang}
-              {friend.studiengang && friend.university && " • "}
-              {friend.university}
-            </p>
-          )}
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            <div className="flex items-center gap-3">
-              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
-                <span className="text-sm">📍</span>
-              </div>
-              <div className="flex-1 min-w-0">
-                <span className="text-sm font-semibold text-white group-hover:text-blue-100 transition-colors block truncate">
-                  {placeName}
-                </span>
-              </div>
+            </h3>
+            <div className="w-2 h-2 rounded-full bg-green-400 shadow-sm shadow-green-400/50" />
+          </div>
+          <p className="text-sm text-slate-400 leading-tight">{timeDisplay}</p>
+        </div>
+      </div>
+
+      {/* Location card */}
+      <Card className="bg-slate-800/90 border-slate-700/50 hover:border-slate-600/70 transition-colors">
+        <CardContent className="p-4">
+          <div className="flex items-start gap-3">
+            <MapPin className="w-5 h-5 mt-0.5 text-blue-400 flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <h4 className="font-semibold text-white text-sm leading-tight">
+                {placeName}
+              </h4>
             </div>
-            {friend.lastPlace?.time && (
-              <div className="text-xs text-slate-500 ml-11 group-hover:text-slate-400 transition-colors">
-                Last updated: {new Date(friend.lastPlace.time).toLocaleString()}
-              </div>
-            )}
           </div>
         </CardContent>
-      </div>
-    </Card>
+      </Card>
+    </div>
   );
 }
 
 // Card for friends without recent activity
 export function NoActivityCard({ friend }: { friend: FriendWithLastPlace }) {
   return (
-    <Card className="group relative overflow-hidden bg-gradient-to-br from-slate-900/50 to-slate-800/50 border-slate-700/30 hover:border-slate-600/50 transition-all duration-300 hover:shadow-lg hover:shadow-slate-500/10 opacity-75 hover:opacity-90">
-      {/* Subtle gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-500/10 to-slate-600/10 opacity-50 group-hover:opacity-70 transition-opacity duration-300" />
+    <div className="space-y-3 opacity-60">
+      {/* BeReal-style user header */}
+      <div className="flex items-center gap-3">
+        {/* Profile picture placeholder */}
+        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-slate-500 to-slate-600 flex items-center justify-center text-slate-300 font-semibold text-lg">
+          {friend.name.charAt(0).toUpperCase()}
+        </div>
 
-      <div className="relative z-10">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg font-bold flex items-center gap-2 text-slate-300 group-hover:text-slate-200 transition-colors">
-            <div className="w-3 h-3 rounded-full bg-slate-600 opacity-60" />
-            {friend.name}
-          </CardTitle>
-          {(friend.studiengang || friend.university) && (
-            <p className="text-sm text-slate-500 group-hover:text-slate-400 transition-colors">
-              {friend.studiengang}
-              {friend.studiengang && friend.university && " • "}
-              {friend.university}
-            </p>
-          )}
-        </CardHeader>
-        <CardContent>
+        {/* Name and time */}
+        <div className="flex-1">
+          <div className="flex items-center gap-2">
+            <h3 className="font-semibold text-slate-300 text-base">
+              {friend.name}
+            </h3>
+            <div className="w-2 h-2 rounded-full bg-slate-500" />
+          </div>
+          <p className="text-sm text-slate-500 leading-tight">
+            No recent activity
+          </p>
+        </div>
+      </div>
+
+      {/* Location card */}
+      <Card className="bg-slate-800/50 border-slate-700/30">
+        <CardContent className="p-4">
           <div className="flex items-center gap-3">
-            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-slate-700/50 flex items-center justify-center">
-              <span className="text-sm opacity-60">📍</span>
-            </div>
-            <span className="text-sm text-slate-500 group-hover:text-slate-400 transition-colors">
-              No recent activity
-            </span>
+            <MapPin className="w-5 h-5 text-slate-500 flex-shrink-0" />
+            <span className="text-sm text-slate-500">Location not shared</span>
           </div>
         </CardContent>
-      </div>
-    </Card>
+      </Card>
+    </div>
   );
 }
 
 // Card for the current user with change place button
 export function UserLocationCard({ user }: { user: FriendWithLastPlace }) {
   const placeName = getPlaceName(user.lastPlace);
-  const timeAgo = user.lastPlace?.time
-    ? formatRelativeTime(user.lastPlace.time)
+  const timeDisplay = user.lastPlace?.time
+    ? formatBeRealTime(user.lastPlace.time)
     : "No recent activity";
 
-  const gradientClass = getTimeGradient(user.lastPlace?.time);
-
   return (
-    <Card className="group relative overflow-hidden bg-gradient-to-br from-indigo-900/90 to-purple-900/90 border-indigo-500/50 hover:border-indigo-400/70 transition-all duration-300 hover:shadow-2xl hover:shadow-indigo-500/20 hover:-translate-y-1">
-      {/* Special gradient overlay for current user */}
-      <div
-        className={`absolute inset-0 bg-gradient-to-br ${gradientClass} opacity-60 group-hover:opacity-80 transition-opacity duration-300`}
-      />
+    <div className="space-y-3">
+      {/* BeReal-style user header */}
+      <div className="flex items-center gap-3">
+        {/* Profile picture placeholder with special styling for current user */}
+        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white font-semibold text-lg shadow-lg ring-2 ring-indigo-400/30">
+          {user.name.charAt(0).toUpperCase()}
+        </div>
 
-      {/* Animated border effect */}
-      <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-indigo-500/30 via-purple-500/30 to-pink-500/30 opacity-70 group-hover:opacity-100 transition-opacity duration-300 blur-sm" />
-
-      <div className="relative z-10">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg font-bold flex items-center justify-between text-white group-hover:text-indigo-100 transition-colors">
-            <span className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-gradient-to-r from-indigo-400 to-purple-500 shadow-lg shadow-indigo-500/40 animate-pulse" />
-              {user.name} (You)
+        {/* Name and time */}
+        <div className="flex-1">
+          <div className="flex items-center gap-2">
+            <h3 className="font-semibold text-white text-base">{user.name}</h3>
+            <span className="text-xs px-2 py-0.5 rounded-full bg-indigo-500/30 text-indigo-200 border border-indigo-400/30">
+              You
             </span>
-            <span className="text-xs font-medium px-2 py-1 rounded-full bg-indigo-800/60 text-indigo-200 border border-indigo-500/50">
-              {timeAgo}
-            </span>
-          </CardTitle>
-          {(user.studiengang || user.university) && (
-            <p className="text-sm text-indigo-300 group-hover:text-indigo-200 transition-colors">
-              {user.studiengang}
-              {user.studiengang && user.university && " • "}
-              {user.university}
-            </p>
-          )}
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
-                <span className="text-sm">📍</span>
-              </div>
-              <div className="flex-1 min-w-0">
-                <span className="text-sm font-semibold text-white group-hover:text-indigo-100 transition-colors block truncate">
-                  {placeName}
-                </span>
-              </div>
-            </div>
-
-            {/* Change Place Button */}
-            <Link href="/map/setPlace" className="block">
-              <Button
-                className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-                size="sm"
-              >
-                <span className="mr-2">📍</span>
-                Change Place
-              </Button>
-            </Link>
-
-            {user.lastPlace?.time && (
-              <div className="text-xs text-indigo-400 group-hover:text-indigo-300 transition-colors">
-                Last updated: {new Date(user.lastPlace.time).toLocaleString()}
-              </div>
-            )}
           </div>
-        </CardContent>
+          <p className="text-sm text-slate-400 leading-tight">{timeDisplay}</p>
+        </div>
       </div>
-    </Card>
+
+      {/* Location card with change place button */}
+      <Card className="bg-slate-800/90 border-slate-700/50 hover:border-slate-600/70 transition-colors">
+        <CardContent className="p-4 space-y-3">
+          <div className="flex items-start gap-3">
+            <MapPin className="w-5 h-5 mt-0.5 text-indigo-400 flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <h4 className="font-semibold text-white text-sm leading-tight">
+                {placeName}
+              </h4>
+            </div>
+          </div>
+
+          {/* Change Place Button */}
+          <Link href="/map/setPlace" className="block">
+            <Button
+              className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white border-0 shadow-md hover:shadow-lg transition-all duration-200"
+              size="sm"
+            >
+              <MapPin className="w-4 h-4 mr-2" />
+              Change Place
+            </Button>
+          </Link>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

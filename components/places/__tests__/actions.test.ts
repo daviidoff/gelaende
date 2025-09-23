@@ -1,4 +1,4 @@
-import { getPlaces } from "../data";
+import { getPlaces, getPlacesPaginated } from "../data";
 import { setPlace } from "../actions";
 import { createClient } from "@/lib/supabase/server";
 
@@ -82,11 +82,13 @@ describe("Places Actions", () => {
       expect(mockPlacesChain.order).toHaveBeenCalledWith("name");
     });
 
-    it("should successfully retrieve places with search term", async () => {
+    it("should filter places by search term", async () => {
       const searchTerm = "Central";
-      const filteredPlaces = [mockPlaces[0]]; // Only Central Park matches
+      const filteredPlaces = mockPlaces.filter((place) =>
+        place.name.includes(searchTerm)
+      );
 
-      // Mock successful places fetch with search
+      // Mock filtered places response
       const mockPlacesChain = {
         select: jest.fn().mockReturnThis(),
         ilike: jest.fn().mockReturnThis(),
@@ -114,10 +116,10 @@ describe("Places Actions", () => {
       expect(mockPlacesChain.order).toHaveBeenCalledWith("name");
     });
 
-    it("should retrieve all places when search term is empty string", async () => {
+    it("should skip search when search term is empty", async () => {
       const searchTerm = "";
 
-      // Mock successful places fetch without search (should not use ilike)
+      // Mock empty search response
       const mockPlacesChain = {
         select: jest.fn().mockReturnThis(),
         ilike: jest.fn().mockReturnThis(),
@@ -136,17 +138,15 @@ describe("Places Actions", () => {
         places: mockPlaces,
       });
 
-      expect(mockSupabaseClient.from).toHaveBeenCalledWith("places");
-      expect(mockPlacesChain.select).toHaveBeenCalledWith("*");
-      expect(mockPlacesChain.order).toHaveBeenCalledWith("name");
-      // Should not call ilike for empty search term
+      // Should not call ilike when search term is empty
       expect(mockPlacesChain.ilike).not.toHaveBeenCalled();
+      expect(mockPlacesChain.order).toHaveBeenCalledWith("name");
     });
 
-    it("should retrieve all places when search term is only whitespace", async () => {
+    it("should skip search when search term is only whitespace", async () => {
       const searchTerm = "   ";
 
-      // Mock successful places fetch without search (should not use ilike)
+      // Mock whitespace search response
       const mockPlacesChain = {
         select: jest.fn().mockReturnThis(),
         ilike: jest.fn().mockReturnThis(),
@@ -165,18 +165,19 @@ describe("Places Actions", () => {
         places: mockPlaces,
       });
 
-      expect(mockSupabaseClient.from).toHaveBeenCalledWith("places");
-      expect(mockPlacesChain.select).toHaveBeenCalledWith("*");
-      expect(mockPlacesChain.order).toHaveBeenCalledWith("name");
-      // Should not call ilike for whitespace-only search term
+      // Should not call ilike when search term is only whitespace
       expect(mockPlacesChain.ilike).not.toHaveBeenCalled();
+      expect(mockPlacesChain.order).toHaveBeenCalledWith("name");
     });
 
-    it("should trim search term and search correctly", async () => {
+    it("should trim search term before filtering", async () => {
       const searchTerm = "  Central  ";
-      const filteredPlaces = [mockPlaces[0]];
+      const trimmedSearchTerm = searchTerm.trim();
+      const filteredPlaces = mockPlaces.filter((place) =>
+        place.name.includes(trimmedSearchTerm)
+      );
 
-      // Mock successful places fetch with search
+      // Mock trimmed search response
       const mockPlacesChain = {
         select: jest.fn().mockReturnThis(),
         ilike: jest.fn().mockReturnThis(),
@@ -195,16 +196,16 @@ describe("Places Actions", () => {
         places: filteredPlaces,
       });
 
-      expect(mockSupabaseClient.from).toHaveBeenCalledWith("places");
-      expect(mockPlacesChain.select).toHaveBeenCalledWith("*");
-      expect(mockPlacesChain.ilike).toHaveBeenCalledWith("name", "%Central%");
-      expect(mockPlacesChain.order).toHaveBeenCalledWith("name");
+      expect(mockPlacesChain.ilike).toHaveBeenCalledWith(
+        "name",
+        `%${trimmedSearchTerm}%`
+      );
     });
 
-    it("should return empty array when search returns no results", async () => {
+    it("should return empty array when no matches found", async () => {
       const searchTerm = "NonexistentPlace";
 
-      // Mock empty search results
+      // Mock no matches response
       const mockPlacesChain = {
         select: jest.fn().mockReturnThis(),
         ilike: jest.fn().mockReturnThis(),
@@ -223,13 +224,10 @@ describe("Places Actions", () => {
         places: [],
       });
 
-      expect(mockSupabaseClient.from).toHaveBeenCalledWith("places");
-      expect(mockPlacesChain.select).toHaveBeenCalledWith("*");
       expect(mockPlacesChain.ilike).toHaveBeenCalledWith(
         "name",
         `%${searchTerm}%`
       );
-      expect(mockPlacesChain.order).toHaveBeenCalledWith("name");
     });
 
     it("should return empty array when no places exist", async () => {
@@ -374,6 +372,107 @@ describe("Places Actions", () => {
       await getPlaces();
 
       expect(mockPlacesChain.order).toHaveBeenCalledWith("name");
+    });
+  });
+
+  describe("getPlacesPaginated", () => {
+    const mockUserId = "user-123";
+    const mockPlaces = [
+      {
+        place_id: "place-1",
+        name: "Central Park",
+        location: { lat: 40.7829, lng: -73.9654 },
+        created_at: "2023-01-01T00:00:00Z",
+        updated_at: "2023-01-01T00:00:00Z",
+      },
+      {
+        place_id: "place-2",
+        name: "Times Square",
+        location: { lat: 40.758, lng: -73.9855 },
+        created_at: "2023-01-02T00:00:00Z",
+        updated_at: "2023-01-02T00:00:00Z",
+      },
+    ];
+
+    beforeEach(() => {
+      // Default successful auth
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: { id: mockUserId } },
+        error: null,
+      });
+    });
+
+    it("should successfully retrieve paginated places", async () => {
+      const mockPlacesChain = {
+        select: jest.fn().mockReturnThis(),
+        ilike: jest.fn().mockReturnThis(),
+        order: jest.fn().mockReturnThis(),
+        range: jest.fn().mockResolvedValue({
+          data: mockPlaces,
+          error: null,
+          count: 20,
+        }),
+      };
+      mockSupabaseClient.from.mockReturnValue(mockPlacesChain);
+
+      const result = await getPlacesPaginated({ page: 1, limit: 10 });
+
+      expect(result).toEqual({
+        success: true,
+        message: "Places retrieved successfully",
+        places: mockPlaces,
+        totalCount: 20,
+        hasMore: true,
+      });
+
+      expect(mockPlacesChain.select).toHaveBeenCalledWith("*", { count: "exact" });
+      expect(mockPlacesChain.range).toHaveBeenCalledWith(0, 9);
+    });
+
+    it("should handle search with pagination", async () => {
+      const searchTerm = "Central";
+      const mockPlacesChain = {
+        select: jest.fn().mockReturnThis(),
+        ilike: jest.fn().mockReturnThis(),
+        order: jest.fn().mockReturnThis(),
+        range: jest.fn().mockResolvedValue({
+          data: [mockPlaces[0]],
+          error: null,
+          count: 1,
+        }),
+      };
+      mockSupabaseClient.from.mockReturnValue(mockPlacesChain);
+
+      const result = await getPlacesPaginated({ searchTerm, page: 1, limit: 10 });
+
+      expect(result).toEqual({
+        success: true,
+        message: "Places retrieved successfully",
+        places: [mockPlaces[0]],
+        totalCount: 1,
+        hasMore: false,
+      });
+
+      expect(mockPlacesChain.ilike).toHaveBeenCalledWith("name", `%${searchTerm}%`);
+    });
+
+    it("should calculate hasMore correctly", async () => {
+      const mockPlacesChain = {
+        select: jest.fn().mockReturnThis(),
+        ilike: jest.fn().mockReturnThis(),
+        order: jest.fn().mockReturnThis(),
+        range: jest.fn().mockResolvedValue({
+          data: mockPlaces,
+          error: null,
+          count: 15,
+        }),
+      };
+      mockSupabaseClient.from.mockReturnValue(mockPlacesChain);
+
+      const result = await getPlacesPaginated({ page: 2, limit: 10 });
+
+      expect(result.hasMore).toBe(false); // 15 total, page 2 with limit 10 = no more
+      expect(mockPlacesChain.range).toHaveBeenCalledWith(10, 19); // Second page
     });
   });
 

@@ -17,9 +17,16 @@ function formatBeRealTime(timestamp: string): string {
 
   const diffInSeconds = Math.floor((now.getTime() - past.getTime()) / 1000);
 
-  // Handle future dates
-  if (diffInSeconds < 0) {
+  // Handle future dates with a small tolerance for timing differences
+  // Allow up to 10 seconds of "future" time to account for network latency,
+  // database processing time, and clock synchronization differences
+  if (diffInSeconds < -10) {
     return "In the future";
+  }
+
+  // If the difference is slightly negative (within 10 seconds), treat it as "just now"
+  if (diffInSeconds < 0) {
+    return "Just now";
   }
 
   const diffInMinutes = Math.floor(diffInSeconds / 60);

@@ -7,7 +7,13 @@ import { Button } from "@/components/ui/button";
 import { getPlaces, getPlacesPaginated, GetPlacesParams } from "./data";
 import { getUserPlaces } from "@/components/users/places/data";
 import { setPlace } from "@/components/users/places/actions";
-import { Search, MapPin, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import {
+  Search,
+  MapPin,
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+} from "lucide-react";
 import type { Database } from "@/lib/types/database";
 
 type Place = Database["public"]["Tables"]["places"]["Row"];
@@ -39,15 +45,21 @@ interface PlaceCardProps {
   fadeIntensity?: number;
 }
 
-function PlaceCard({ place, onClick, isLoading, isSelected, fadeIntensity = 0 }: PlaceCardProps) {
+function PlaceCard({
+  place,
+  onClick,
+  isLoading,
+  isSelected,
+  fadeIntensity = 0,
+}: PlaceCardProps) {
   // Calculate the colorful gradient based on fade intensity (0-1, where 1 is most colorful)
   const getSelectedStyle = (): React.CSSProperties => {
     if (!isSelected) return {};
-    
+
     // Create a vibrant gradient that fades exponentially
     const intensity = fadeIntensity;
     const alpha = Math.max(0.1, intensity); // Keep minimum visibility
-    
+
     return {
       background: `linear-gradient(135deg, 
         rgba(59, 130, 246, ${alpha * 0.8}) 0%, 
@@ -55,46 +67,58 @@ function PlaceCard({ place, onClick, isLoading, isSelected, fadeIntensity = 0 }:
         rgba(236, 72, 153, ${alpha * 0.7}) 50%, 
         rgba(245, 101, 101, ${alpha * 0.5}) 75%, 
         rgba(251, 191, 36, ${alpha * 0.6}) 100%)`,
-      boxShadow: `0 0 ${20 * intensity}px rgba(59, 130, 246, ${intensity * 0.4}), 
-                  0 0 ${40 * intensity}px rgba(147, 51, 234, ${intensity * 0.2})`,
+      boxShadow: `0 0 ${20 * intensity}px rgba(59, 130, 246, ${
+        intensity * 0.4
+      }), 
+                  0 0 ${40 * intensity}px rgba(147, 51, 234, ${
+        intensity * 0.2
+      })`,
       border: `2px solid rgba(59, 130, 246, ${intensity * 0.8})`,
       transform: `scale(${1 + intensity * 0.02})`,
-      transition: "all 0.3s ease-out"
+      transition: "all 0.3s ease-out",
     };
   };
 
   const selectedStyle = getSelectedStyle();
 
   return (
-    <Card 
+    <Card
       className={`cursor-pointer hover:shadow-md transition-all duration-300 ${
-        isSelected ? 'ring-2 ring-blue-400 ring-opacity-50' : ''
+        isSelected ? "ring-2 ring-blue-400 ring-opacity-50" : ""
       }`}
       style={selectedStyle}
       onClick={() => onClick(place.place_id)}
     >
       <CardContent className="p-4">
         <div className="flex items-start gap-3">
-          <MapPin className={`w-5 h-5 mt-1 flex-shrink-0 transition-colors duration-300 ${
-            isSelected ? 'text-white' : 'text-primary'
-          }`} />
+          <MapPin
+            className={`w-5 h-5 mt-1 flex-shrink-0 transition-colors duration-300 ${
+              isSelected ? "text-white" : "text-primary"
+            }`}
+          />
           <div className="flex-1 min-w-0">
-            <h3 className={`font-semibold text-sm leading-tight transition-colors duration-300 ${
-              isSelected ? 'text-white' : ''
-            }`}>
+            <h3
+              className={`font-semibold text-sm leading-tight transition-colors duration-300 ${
+                isSelected ? "text-white" : ""
+              }`}
+            >
               {place.name}
             </h3>
             {place.address && (
-              <p className={`text-xs mt-1 line-clamp-2 transition-colors duration-300 ${
-                isSelected ? 'text-gray-100' : 'text-muted-foreground'
-              }`}>
+              <p
+                className={`text-xs mt-1 line-clamp-2 transition-colors duration-300 ${
+                  isSelected ? "text-gray-100" : "text-muted-foreground"
+                }`}
+              >
                 {place.address}
               </p>
             )}
             {place.time && (
-              <p className={`text-xs mt-1 transition-colors duration-300 ${
-                isSelected ? 'text-gray-200' : 'text-muted-foreground'
-              }`}>
+              <p
+                className={`text-xs mt-1 transition-colors duration-300 ${
+                  isSelected ? "text-gray-200" : "text-muted-foreground"
+                }`}
+              >
                 Last visit: {new Date(place.time).toLocaleDateString()}
               </p>
             )}
@@ -116,7 +140,13 @@ interface PaginationProps {
   isLoading: boolean;
 }
 
-function Pagination({ currentPage, hasMore, onPrevious, onNext, isLoading }: PaginationProps) {
+function Pagination({
+  currentPage,
+  hasMore,
+  onPrevious,
+  onNext,
+  isLoading,
+}: PaginationProps) {
   return (
     <div className="flex items-center justify-between gap-2">
       <Button
@@ -129,11 +159,9 @@ function Pagination({ currentPage, hasMore, onPrevious, onNext, isLoading }: Pag
         <ChevronLeft className="w-4 h-4" />
         Previous
       </Button>
-      
-      <span className="text-sm text-muted-foreground">
-        Page {currentPage}
-      </span>
-      
+
+      <span className="text-sm text-muted-foreground">Page {currentPage}</span>
+
       <Button
         variant="outline"
         size="sm"
@@ -158,47 +186,49 @@ export default function SetPlaceComponent() {
   const [isLoadingRecent, setIsLoadingRecent] = useState(true);
   const [isLoadingSearch, setIsLoadingSearch] = useState(false);
   const [isSettingPlace, setIsSettingPlace] = useState<string | null>(null);
-  
+
   // Selected state management
   const [selectedPlace, setSelectedPlace] = useState<string | null>(null);
-  const [selectedTimestamp, setSelectedTimestamp] = useState<number | null>(null);
+  const [selectedTimestamp, setSelectedTimestamp] = useState<number | null>(
+    null
+  );
   const [fadeIntensity, setFadeIntensity] = useState(0);
 
   // Calculate exponential fade based on time elapsed
   const calculateFadeIntensity = useCallback((timestamp: number): number => {
     const now = Date.now();
     const elapsed = now - timestamp;
-    
+
     // Fade parameters
     const maxDuration = 6 * 60 * 60 * 1000; // 6 hours in milliseconds
     const fadeRate = 0.5; // Exponential decay rate
-    
+
     if (elapsed >= maxDuration) return 0;
-    
+
     // Exponential decay: intensity = e^(-fadeRate * normalizedTime)
     const normalizedTime = elapsed / maxDuration;
     const intensity = Math.exp(-fadeRate * normalizedTime * 3); // Multiply by 3 for faster initial decay
-    
+
     return Math.max(0, Math.min(1, intensity));
   }, []);
 
   // Load persisted selection state on mount
   useEffect(() => {
-    const savedSelection = localStorage.getItem('selectedPlace');
-    const savedTimestamp = localStorage.getItem('selectedTimestamp');
-    
+    const savedSelection = localStorage.getItem("selectedPlace");
+    const savedTimestamp = localStorage.getItem("selectedTimestamp");
+
     if (savedSelection && savedTimestamp) {
       const timestamp = parseInt(savedTimestamp);
       const intensity = calculateFadeIntensity(timestamp);
-      
+
       if (intensity > 0.01) {
         setSelectedPlace(savedSelection);
         setSelectedTimestamp(timestamp);
         setFadeIntensity(intensity);
       } else {
         // Clear expired selection
-        localStorage.removeItem('selectedPlace');
-        localStorage.removeItem('selectedTimestamp');
+        localStorage.removeItem("selectedPlace");
+        localStorage.removeItem("selectedTimestamp");
       }
     }
   }, [calculateFadeIntensity]);
@@ -206,11 +236,11 @@ export default function SetPlaceComponent() {
   // Persist selection state
   useEffect(() => {
     if (selectedPlace && selectedTimestamp) {
-      localStorage.setItem('selectedPlace', selectedPlace);
-      localStorage.setItem('selectedTimestamp', selectedTimestamp.toString());
+      localStorage.setItem("selectedPlace", selectedPlace);
+      localStorage.setItem("selectedTimestamp", selectedTimestamp.toString());
     } else {
-      localStorage.removeItem('selectedPlace');
-      localStorage.removeItem('selectedTimestamp');
+      localStorage.removeItem("selectedPlace");
+      localStorage.removeItem("selectedTimestamp");
     }
   }, [selectedPlace, selectedTimestamp]);
 
@@ -221,7 +251,7 @@ export default function SetPlaceComponent() {
     const updateFade = () => {
       const newIntensity = calculateFadeIntensity(selectedTimestamp);
       setFadeIntensity(newIntensity);
-      
+
       // Clear selection if completely faded
       if (newIntensity <= 0.01) {
         setSelectedPlace(null);
@@ -251,27 +281,30 @@ export default function SetPlaceComponent() {
   // Helper function to extract address from location data
   const getAddressFromLocation = useCallback((location: any): string => {
     if (!location) return "";
-    
-    if (typeof location === 'object') {
+
+    if (typeof location === "object") {
       // If location has address property, use it
       if (location.address) return location.address;
-      
+
       // If location has coordinates, format them
       if (location.lat && location.lng) {
         return `${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}`;
       }
     }
-    
+
     return "";
   }, []);
 
   // Convert Place or ActivityPlace to PlaceCardData
-  const convertPlaceToCardData = useCallback((place: Place | ActivityPlace, time?: string): PlaceCardData => ({
-    place_id: place.place_id,
-    name: place.name,
-    address: getAddressFromLocation(place.location),
-    time,
-  }), [getAddressFromLocation]);
+  const convertPlaceToCardData = useCallback(
+    (place: Place | ActivityPlace, time?: string): PlaceCardData => ({
+      place_id: place.place_id,
+      name: place.name,
+      address: getAddressFromLocation(place.location),
+      time,
+    }),
+    [getAddressFromLocation]
+  );
 
   // Load recent places
   const loadRecentPlaces = useCallback(async () => {
@@ -280,10 +313,10 @@ export default function SetPlaceComponent() {
       const result = await getUserPlaces();
       if (result.success && result.places) {
         const recentPlacesData = result.places.map((activity) => {
-          const place = Array.isArray(activity.places) 
-            ? activity.places[0] 
+          const place = Array.isArray(activity.places)
+            ? activity.places[0]
             : activity.places;
-          
+
           return convertPlaceToCardData(place, activity.time);
         });
         setRecentPlaces(recentPlacesData);
@@ -295,51 +328,54 @@ export default function SetPlaceComponent() {
   }, [convertPlaceToCardData]);
 
   // Search places
-  const searchPlaces = useCallback(async (term: string, page: number = 1) => {
-    if (!term.trim()) {
-      setSearchResults([]);
-      setHasMore(false);
-      return;
-    }
-
-    setIsLoadingSearch(true);
-    try {
-      const params: GetPlacesParams = {
-        searchTerm: term,
-        page,
-        limit: 10,
-      };
-      
-      const result = await getPlacesPaginated(params);
-      
-      if (result.success && result.places) {
-        const searchData = result.places.map((place) => 
-          convertPlaceToCardData(place)
-        );
-        
-        if (page === 1) {
-          setSearchResults(searchData);
-        } else {
-          setSearchResults(prev => [...prev, ...searchData]);
-        }
-        
-        setHasMore(result.hasMore || false);
+  const searchPlaces = useCallback(
+    async (term: string, page: number = 1) => {
+      if (!term.trim()) {
+        setSearchResults([]);
+        setHasMore(false);
+        return;
       }
-    } catch (error) {
-      console.error("Error searching places:", error);
-    }
-    setIsLoadingSearch(false);
-  }, [convertPlaceToCardData]);
+
+      setIsLoadingSearch(true);
+      try {
+        const params: GetPlacesParams = {
+          searchTerm: term,
+          page,
+          limit: 10,
+        };
+
+        const result = await getPlacesPaginated(params);
+
+        if (result.success && result.places) {
+          const searchData = result.places.map((place) =>
+            convertPlaceToCardData(place)
+          );
+
+          if (page === 1) {
+            setSearchResults(searchData);
+          } else {
+            setSearchResults((prev) => [...prev, ...searchData]);
+          }
+
+          setHasMore(result.hasMore || false);
+        }
+      } catch (error) {
+        console.error("Error searching places:", error);
+      }
+      setIsLoadingSearch(false);
+    },
+    [convertPlaceToCardData]
+  );
 
   // Handle place selection
   const handlePlaceSelect = async (placeId: string) => {
     setIsSettingPlace(placeId);
-    
+
     // Set selected state immediately for visual feedback
     setSelectedPlace(placeId);
     setSelectedTimestamp(Date.now());
     setFadeIntensity(1); // Start with full intensity
-    
+
     try {
       const result = await setPlace(placeId);
       if (result.success) {
@@ -436,12 +472,12 @@ export default function SetPlaceComponent() {
       <div className="space-y-3">
         {placesToShow.length === 0 && !isLoading && (
           <div className="text-center py-8 text-muted-foreground">
-            {isShowingSearchResults 
-              ? "No places found. Try a different search term." 
+            {isShowingSearchResults
+              ? "No places found. Try a different search term."
               : "No recent places found."}
           </div>
         )}
-        
+
         {placesToShow.map((place) => (
           <PlaceCard
             key={place.place_id}
@@ -455,15 +491,16 @@ export default function SetPlaceComponent() {
       </div>
 
       {/* Pagination - only show for search results */}
-      {isShowingSearchResults && (searchResults.length > 0 || currentPage > 1) && (
-        <Pagination
-          currentPage={currentPage}
-          hasMore={hasMore}
-          onPrevious={handlePrevious}
-          onNext={handleNext}
-          isLoading={isLoadingSearch}
-        />
-      )}
+      {isShowingSearchResults &&
+        (searchResults.length > 0 || currentPage > 1) && (
+          <Pagination
+            currentPage={currentPage}
+            hasMore={hasMore}
+            onPrevious={handlePrevious}
+            onNext={handleNext}
+            isLoading={isLoadingSearch}
+          />
+        )}
     </div>
   );
 }

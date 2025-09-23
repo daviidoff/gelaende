@@ -425,7 +425,9 @@ describe("Places Actions", () => {
         hasMore: true,
       });
 
-      expect(mockPlacesChain.select).toHaveBeenCalledWith("*", { count: "exact" });
+      expect(mockPlacesChain.select).toHaveBeenCalledWith("*", {
+        count: "exact",
+      });
       expect(mockPlacesChain.range).toHaveBeenCalledWith(0, 9);
     });
 
@@ -443,7 +445,11 @@ describe("Places Actions", () => {
       };
       mockSupabaseClient.from.mockReturnValue(mockPlacesChain);
 
-      const result = await getPlacesPaginated({ searchTerm, page: 1, limit: 10 });
+      const result = await getPlacesPaginated({
+        searchTerm,
+        page: 1,
+        limit: 10,
+      });
 
       expect(result).toEqual({
         success: true,
@@ -453,7 +459,10 @@ describe("Places Actions", () => {
         hasMore: false,
       });
 
-      expect(mockPlacesChain.ilike).toHaveBeenCalledWith("name", `%${searchTerm}%`);
+      expect(mockPlacesChain.ilike).toHaveBeenCalledWith(
+        "name",
+        `%${searchTerm}%`
+      );
     });
 
     it("should calculate hasMore correctly", async () => {

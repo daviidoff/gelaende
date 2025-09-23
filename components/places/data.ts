@@ -83,7 +83,9 @@ export async function getPlaces(searchTerm?: string): Promise<GetPlacesResult> {
  * @param params Object containing searchTerm, page, and limit
  * @returns Promise with success status, message, places array, and pagination info
  */
-export async function getPlacesPaginated(params: GetPlacesParams = {}): Promise<GetPlacesPaginatedResult> {
+export async function getPlacesPaginated(
+  params: GetPlacesParams = {}
+): Promise<GetPlacesPaginatedResult> {
   try {
     const { searchTerm, page = 1, limit = 10 } = params;
     const supabase = await createClient();
@@ -112,9 +114,11 @@ export async function getPlacesPaginated(params: GetPlacesParams = {}): Promise<
     const from = (page - 1) * limit;
     const to = from + limit - 1;
 
-    const { data: places, error: placesError, count } = await query
-      .order("name")
-      .range(from, to);
+    const {
+      data: places,
+      error: placesError,
+      count,
+    } = await query.order("name").range(from, to);
 
     if (placesError) {
       console.error("Error fetching places:", placesError);

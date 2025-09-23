@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { getPlacesPaginated, GetPlacesParams } from "./data";
 import { getUserPlaces } from "@/components/users/places/data";
-import { setPlace } from "@/components/users/places/actions";
+import { addActivity } from "./actions";
 import { PlaceCard, PlaceCardData } from "./PlaceCard";
 import { Search, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import type { Database } from "@/lib/types/database";
@@ -71,7 +71,7 @@ function Pagination({
   );
 }
 
-export default function SetPlaceComponent() {
+export default function AddActivityComponent() {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
@@ -281,12 +281,12 @@ export default function SetPlaceComponent() {
     setFadeIntensity(1); // Start with full intensity
 
     try {
-      const result = await setPlace(placeId);
+      const result = await addActivity({ place_id: placeId });
       if (result.success) {
-        // Redirect to map page after successfully setting the place
+        // Redirect to map page after successfully creating the activity
         router.push("/map");
       } else {
-        console.error("Failed to set place:", result.error);
+        console.error("Failed to create activity:", result.message);
         // Reset selection on error
         setSelectedPlace(null);
         setSelectedTimestamp(null);

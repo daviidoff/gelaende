@@ -198,7 +198,7 @@ export function UserLocationCard({ user }: { user: FriendWithLastPlace }) {
           </div>
 
           {/* Change Place Button */}
-          <Link href="/map/setPlace" className="block">
+          <Link href="/map/addActivity" className="block">
             <Button
               className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white border-0 shadow-md hover:shadow-lg transition-all duration-200"
               size="sm"

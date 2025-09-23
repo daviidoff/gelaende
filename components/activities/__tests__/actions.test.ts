@@ -1,5 +1,5 @@
 import { getPlaces, getPlacesPaginated } from "../data";
-import { setPlace } from "../actions";
+import { addActivity } from "../actions";
 import { createClient } from "@/lib/supabase/server";
 
 // Mock modules
@@ -486,22 +486,16 @@ describe("Places Actions", () => {
     });
   });
 
-  describe("setPlace", () => {
+  describe("addActivity", () => {
     const mockUserId = "user-123";
-    const mockNewPlace = {
-      place_id: "place-new",
-      name: "New Place",
-      location: { lat: 40.7829, lng: -73.9654 },
-      created_at: "2023-01-03T00:00:00Z",
-      updated_at: "2023-01-03T00:00:00Z",
-    };
-
-    const mockUpdatedPlace = {
-      place_id: "place-1",
-      name: "Updated Place",
-      location: { lat: 41.7829, lng: -74.9654 },
-      created_at: "2023-01-01T00:00:00Z",
-      updated_at: "2023-01-03T00:00:00Z",
+    const mockPlaceId = "place-1";
+    const mockActivity = {
+      activity_id: "activity-new",
+      user_id: mockUserId,
+      place_id: mockPlaceId,
+      time: "2023-01-03T12:00:00Z",
+      created_at: "2023-01-03T12:00:00Z",
+      updated_at: "2023-01-03T12:00:00Z",
     };
 
     beforeEach(() => {
@@ -512,171 +506,108 @@ describe("Places Actions", () => {
       });
     });
 
-    describe("Creating new places", () => {
-      it("should successfully create a new place", async () => {
-        const mockPlacesChain = {
+    describe("Creating activities", () => {
+      it("should successfully create a new activity", async () => {
+        const mockActivitiesChain = {
           insert: jest.fn().mockReturnThis(),
           select: jest.fn().mockReturnThis(),
           single: jest.fn().mockResolvedValue({
-            data: mockNewPlace,
+            data: mockActivity,
             error: null,
           }),
         };
-        mockSupabaseClient.from.mockReturnValue(mockPlacesChain);
+        mockSupabaseClient.from.mockReturnValue(mockActivitiesChain);
 
-        const result = await setPlace({
-          name: "New Place",
-          location: { lat: 40.7829, lng: -73.9654 },
+        const result = await addActivity({
+          place_id: mockPlaceId,
         });
 
         expect(result).toEqual({
           success: true,
-          message: "Place created successfully",
-          place: mockNewPlace,
+          message: "Activity created successfully",
+          activity: mockActivity,
         });
 
-        expect(mockSupabaseClient.from).toHaveBeenCalledWith("places");
-        expect(mockPlacesChain.insert).toHaveBeenCalledWith({
-          name: "New Place",
-          location: { lat: 40.7829, lng: -73.9654 },
+        expect(mockSupabaseClient.from).toHaveBeenCalledWith("activities");
+        expect(mockActivitiesChain.insert).toHaveBeenCalledWith({
+          user_id: mockUserId,
+          place_id: mockPlaceId,
+          time: expect.any(String),
         });
-        expect(mockPlacesChain.select).toHaveBeenCalledWith("*");
-        expect(mockPlacesChain.single).toHaveBeenCalled();
+        expect(mockActivitiesChain.select).toHaveBeenCalledWith("*");
+        expect(mockActivitiesChain.single).toHaveBeenCalled();
       });
 
-      it("should create a place without location", async () => {
-        const placeWithoutLocation = { ...mockNewPlace, location: null };
-        const mockPlacesChain = {
+      it("should trim whitespace from place_id", async () => {
+        const mockActivitiesChain = {
           insert: jest.fn().mockReturnThis(),
           select: jest.fn().mockReturnThis(),
           single: jest.fn().mockResolvedValue({
-            data: placeWithoutLocation,
+            data: mockActivity,
             error: null,
           }),
         };
-        mockSupabaseClient.from.mockReturnValue(mockPlacesChain);
+        mockSupabaseClient.from.mockReturnValue(mockActivitiesChain);
 
-        const result = await setPlace({
-          name: "New Place",
+        await addActivity({
+          place_id: "  " + mockPlaceId + "  ",
         });
 
-        expect(result.success).toBe(true);
-        expect(mockPlacesChain.insert).toHaveBeenCalledWith({
-          name: "New Place",
-          location: null,
+        expect(mockActivitiesChain.insert).toHaveBeenCalledWith({
+          user_id: mockUserId,
+          place_id: mockPlaceId,
+          time: expect.any(String),
         });
       });
 
-      it("should trim whitespace from place name", async () => {
-        const mockPlacesChain = {
+      it("should set current time for activity", async () => {
+        const mockActivitiesChain = {
           insert: jest.fn().mockReturnThis(),
           select: jest.fn().mockReturnThis(),
           single: jest.fn().mockResolvedValue({
-            data: mockNewPlace,
+            data: mockActivity,
             error: null,
           }),
         };
-        mockSupabaseClient.from.mockReturnValue(mockPlacesChain);
+        mockSupabaseClient.from.mockReturnValue(mockActivitiesChain);
 
-        await setPlace({
-          name: "  New Place  ",
-          location: { lat: 40.7829, lng: -73.9654 },
+        const beforeTime = new Date().toISOString();
+        await addActivity({
+          place_id: mockPlaceId,
         });
+        const afterTime = new Date().toISOString();
 
-        expect(mockPlacesChain.insert).toHaveBeenCalledWith({
-          name: "New Place",
-          location: { lat: 40.7829, lng: -73.9654 },
-        });
-      });
-    });
+        const insertCall = mockActivitiesChain.insert.mock.calls[0][0];
+        const activityTime = insertCall.time;
 
-    describe("Updating existing places", () => {
-      it("should successfully update an existing place", async () => {
-        const mockPlacesChain = {
-          update: jest.fn().mockReturnThis(),
-          eq: jest.fn().mockReturnThis(),
-          select: jest.fn().mockReturnThis(),
-          single: jest.fn().mockResolvedValue({
-            data: mockUpdatedPlace,
-            error: null,
-          }),
-        };
-        mockSupabaseClient.from.mockReturnValue(mockPlacesChain);
-
-        const result = await setPlace({
-          place_id: "place-1",
-          name: "Updated Place",
-          location: { lat: 41.7829, lng: -74.9654 },
-        });
-
-        expect(result).toEqual({
-          success: true,
-          message: "Place updated successfully",
-          place: mockUpdatedPlace,
-        });
-
-        expect(mockSupabaseClient.from).toHaveBeenCalledWith("places");
-        expect(mockPlacesChain.update).toHaveBeenCalledWith({
-          name: "Updated Place",
-          location: { lat: 41.7829, lng: -74.9654 },
-          updated_at: expect.any(String),
-        });
-        expect(mockPlacesChain.eq).toHaveBeenCalledWith("place_id", "place-1");
-        expect(mockPlacesChain.select).toHaveBeenCalledWith("*");
-        expect(mockPlacesChain.single).toHaveBeenCalled();
-      });
-
-      it("should update place with null location", async () => {
-        const mockPlacesChain = {
-          update: jest.fn().mockReturnThis(),
-          eq: jest.fn().mockReturnThis(),
-          select: jest.fn().mockReturnThis(),
-          single: jest.fn().mockResolvedValue({
-            data: { ...mockUpdatedPlace, location: null },
-            error: null,
-          }),
-        };
-        mockSupabaseClient.from.mockReturnValue(mockPlacesChain);
-
-        const result = await setPlace({
-          place_id: "place-1",
-          name: "Updated Place",
-          location: null,
-        });
-
-        expect(result.success).toBe(true);
-        expect(mockPlacesChain.update).toHaveBeenCalledWith({
-          name: "Updated Place",
-          location: null,
-          updated_at: expect.any(String),
-        });
+        expect(activityTime).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
+        expect(activityTime >= beforeTime).toBe(true);
+        expect(activityTime <= afterTime).toBe(true);
       });
     });
 
     describe("Validation", () => {
-      it("should fail when name is empty", async () => {
-        const result = await setPlace({
-          name: "",
-          location: { lat: 40.7829, lng: -73.9654 },
+      it("should fail when place_id is empty", async () => {
+        const result = await addActivity({
+          place_id: "",
         });
 
         expect(result).toEqual({
           success: false,
-          message: "Place name is required",
+          message: "Place ID is required",
         });
 
         expect(mockSupabaseClient.from).not.toHaveBeenCalled();
       });
 
-      it("should fail when name is only whitespace", async () => {
-        const result = await setPlace({
-          name: "   ",
-          location: { lat: 40.7829, lng: -73.9654 },
+      it("should fail when place_id is only whitespace", async () => {
+        const result = await addActivity({
+          place_id: "   ",
         });
 
         expect(result).toEqual({
           success: false,
-          message: "Place name is required",
+          message: "Place ID is required",
         });
 
         expect(mockSupabaseClient.from).not.toHaveBeenCalled();
@@ -690,9 +621,8 @@ describe("Places Actions", () => {
           error: null,
         });
 
-        const result = await setPlace({
-          name: "New Place",
-          location: { lat: 40.7829, lng: -73.9654 },
+        const result = await addActivity({
+          place_id: mockPlaceId,
         });
 
         expect(result).toEqual({
@@ -709,9 +639,8 @@ describe("Places Actions", () => {
           error: { message: "Auth error" },
         });
 
-        const result = await setPlace({
-          name: "New Place",
-          location: { lat: 40.7829, lng: -73.9654 },
+        const result = await addActivity({
+          place_id: mockPlaceId,
         });
 
         expect(result).toEqual({
@@ -724,36 +653,9 @@ describe("Places Actions", () => {
     });
 
     describe("Database errors", () => {
-      it("should handle unique constraint violation", async () => {
-        const mockPlacesChain = {
-          insert: jest.fn().mockReturnThis(),
-          select: jest.fn().mockReturnThis(),
-          single: jest.fn().mockResolvedValue({
-            data: null,
-            error: { code: "23505", message: "Unique constraint violation" },
-          }),
-        };
-        mockSupabaseClient.from.mockReturnValue(mockPlacesChain);
-
-        const consoleSpy = jest.spyOn(console, "error").mockImplementation();
-
-        const result = await setPlace({
-          name: "Duplicate Place",
-          location: { lat: 40.7829, lng: -73.9654 },
-        });
-
-        expect(result).toEqual({
-          success: false,
-          message: "A place with this name already exists",
-        });
-
-        consoleSpy.mockRestore();
-      });
-
       it("should handle foreign key constraint violation", async () => {
-        const mockPlacesChain = {
-          update: jest.fn().mockReturnThis(),
-          eq: jest.fn().mockReturnThis(),
+        const mockActivitiesChain = {
+          insert: jest.fn().mockReturnThis(),
           select: jest.fn().mockReturnThis(),
           single: jest.fn().mockResolvedValue({
             data: null,
@@ -763,13 +665,12 @@ describe("Places Actions", () => {
             },
           }),
         };
-        mockSupabaseClient.from.mockReturnValue(mockPlacesChain);
+        mockSupabaseClient.from.mockReturnValue(mockActivitiesChain);
 
         const consoleSpy = jest.spyOn(console, "error").mockImplementation();
 
-        const result = await setPlace({
-          place_id: "invalid-id",
-          name: "Updated Place",
+        const result = await addActivity({
+          place_id: "invalid-place-id",
         });
 
         expect(result).toEqual({
@@ -780,8 +681,8 @@ describe("Places Actions", () => {
         consoleSpy.mockRestore();
       });
 
-      it("should handle generic database error for create", async () => {
-        const mockPlacesChain = {
+      it("should handle generic database error", async () => {
+        const mockActivitiesChain = {
           insert: jest.fn().mockReturnThis(),
           select: jest.fn().mockReturnThis(),
           single: jest.fn().mockResolvedValue({
@@ -789,53 +690,20 @@ describe("Places Actions", () => {
             error: { message: "Database error", code: "PGRST116" },
           }),
         };
-        mockSupabaseClient.from.mockReturnValue(mockPlacesChain);
+        mockSupabaseClient.from.mockReturnValue(mockActivitiesChain);
 
         const consoleSpy = jest.spyOn(console, "error").mockImplementation();
 
-        const result = await setPlace({
-          name: "New Place",
-          location: { lat: 40.7829, lng: -73.9654 },
+        const result = await addActivity({
+          place_id: mockPlaceId,
         });
 
         expect(result).toEqual({
           success: false,
-          message: "Failed to create place",
+          message: "Failed to create activity",
         });
 
-        expect(consoleSpy).toHaveBeenCalledWith("Error creating place:", {
-          message: "Database error",
-          code: "PGRST116",
-        });
-
-        consoleSpy.mockRestore();
-      });
-
-      it("should handle generic database error for update", async () => {
-        const mockPlacesChain = {
-          update: jest.fn().mockReturnThis(),
-          eq: jest.fn().mockReturnThis(),
-          select: jest.fn().mockReturnThis(),
-          single: jest.fn().mockResolvedValue({
-            data: null,
-            error: { message: "Database error", code: "PGRST116" },
-          }),
-        };
-        mockSupabaseClient.from.mockReturnValue(mockPlacesChain);
-
-        const consoleSpy = jest.spyOn(console, "error").mockImplementation();
-
-        const result = await setPlace({
-          place_id: "place-1",
-          name: "Updated Place",
-        });
-
-        expect(result).toEqual({
-          success: false,
-          message: "Failed to update place",
-        });
-
-        expect(consoleSpy).toHaveBeenCalledWith("Error updating place:", {
+        expect(consoleSpy).toHaveBeenCalledWith("Error creating activity:", {
           message: "Database error",
           code: "PGRST116",
         });
@@ -852,9 +720,8 @@ describe("Places Actions", () => {
 
         const consoleSpy = jest.spyOn(console, "error").mockImplementation();
 
-        const result = await setPlace({
-          name: "New Place",
-          location: { lat: 40.7829, lng: -73.9654 },
+        const result = await addActivity({
+          place_id: mockPlaceId,
         });
 
         expect(result).toEqual({
@@ -863,23 +730,22 @@ describe("Places Actions", () => {
         });
 
         expect(consoleSpy).toHaveBeenCalledWith(
-          "Unexpected error in setPlace:",
+          "Unexpected error in addActivity:",
           expect.any(Error)
         );
 
         consoleSpy.mockRestore();
       });
 
-      it("should handle unexpected errors during update", async () => {
+      it("should handle unexpected errors during auth", async () => {
         mockSupabaseClient.auth.getUser.mockRejectedValue(
           new Error("Unexpected error")
         );
 
         const consoleSpy = jest.spyOn(console, "error").mockImplementation();
 
-        const result = await setPlace({
-          place_id: "place-1",
-          name: "Updated Place",
+        const result = await addActivity({
+          place_id: mockPlaceId,
         });
 
         expect(result).toEqual({
@@ -888,7 +754,7 @@ describe("Places Actions", () => {
         });
 
         expect(consoleSpy).toHaveBeenCalledWith(
-          "Unexpected error in setPlace:",
+          "Unexpected error in addActivity:",
           expect.any(Error)
         );
 

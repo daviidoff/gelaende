@@ -9,6 +9,7 @@ import { FriendWithLastPlace } from "@/components/users/friendships/data";
 function formatBeRealTime(timestamp: string): string {
   const now = new Date();
   const past = new Date(timestamp);
+  console.log("now:", now, "past:", past);
 
   // Check if the past date is valid
   if (isNaN(past.getTime())) {
@@ -83,6 +84,7 @@ export function FriendLocationCard({
 }: {
   friend: FriendWithLastPlace;
 }) {
+  console.log("FRIENDS STAMP: ", friend.lastPlace?.time);
   const placeName = getPlaceName(friend.lastPlace);
   const timeDisplay = friend.lastPlace?.time
     ? formatBeRealTime(friend.lastPlace.time)
@@ -170,6 +172,13 @@ export function UserLocationCard({ user }: { user: FriendWithLastPlace }) {
   const timeDisplay = user.lastPlace?.time
     ? formatBeRealTime(user.lastPlace.time)
     : "No recent activity";
+
+  console.log(
+    "Rendering UserLocationCard with time:",
+    user.lastPlace?.time,
+    "formatted as:",
+    timeDisplay
+  );
 
   return (
     <div className="space-y-3">

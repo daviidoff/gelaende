@@ -50,6 +50,12 @@ export async function addActivity(
       };
     }
 
+    console.log(
+      "add activity time:",
+      new Date(),
+      "\niso:",
+      new Date().toISOString()
+    );
     // Create new activity with current time
     const insertData: ActivityInsert = {
       user_id: user.id,

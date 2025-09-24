@@ -35,6 +35,7 @@ export async function getCurrentPlace(userId?: string) {
         `
         activity_id,
         time,
+        picture,
         places (
           place_id,
           name,
@@ -106,6 +107,7 @@ export async function getUserPlaces(userId?: string) {
       .select(
         `
         time,
+        picture,
         places (
           place_id,
           name,

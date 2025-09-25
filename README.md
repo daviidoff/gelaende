@@ -1,3 +1,15 @@
+### Pre-commit hook
+
+To avoid commiting anything that breaks linting rules, you can set up a git
+pre-commit hook. The `.githooks/` directory contains such a hook, so the easiest
+way to set it up is to just configure git to use hooks from there:
+
+```
+$ git config core.hooksPath .githooks
+```
+
+$ git config core.hooksPath .githooks
+
 <a href="https://demo-nextjs-with-supabase.vercel.app/">
   <img alt="Next.js and Supabase Starter Kit - the fastest way to build apps with Next.js and Supabase" src="https://demo-nextjs-with-supabase.vercel.app/opengraph-image.png">
   <h1 align="center">Next.js and Supabase Starter Kit</h1>

@@ -1,5 +1,9 @@
 import { getPlaces, getPlacesPaginated } from "../data";
-import { addActivity } from "../actions";
+import {
+  addActivity,
+  updateActivityPicture,
+  getUserLastActivity,
+} from "../actions";
 import { createClient } from "@/lib/supabase/server";
 
 // Mock modules
@@ -798,7 +802,6 @@ describe("Places Actions", () => {
         };
         mockSupabaseClient.from.mockReturnValue(mockActivitiesChain);
 
-        const { updateActivityPicture } = require("../actions");
         const result = await updateActivityPicture({
           activityId: mockActivityId,
           pictureData: mockPictureData,
@@ -827,7 +830,6 @@ describe("Places Actions", () => {
 
     describe("Validation", () => {
       it("should fail when activityId is empty", async () => {
-        const { updateActivityPicture } = require("../actions");
         const result = await updateActivityPicture({
           activityId: "",
           pictureData: mockPictureData,
@@ -842,7 +844,6 @@ describe("Places Actions", () => {
       });
 
       it("should fail when pictureData is empty", async () => {
-        const { updateActivityPicture } = require("../actions");
         const result = await updateActivityPicture({
           activityId: mockActivityId,
           pictureData: "",
@@ -862,7 +863,6 @@ describe("Places Actions", () => {
           error: { message: "Auth error" },
         });
 
-        const { updateActivityPicture } = require("../actions");
         const result = await updateActivityPicture({
           activityId: mockActivityId,
           pictureData: mockPictureData,
@@ -895,7 +895,6 @@ describe("Places Actions", () => {
 
         const consoleSpy = jest.spyOn(console, "error").mockImplementation();
 
-        const { updateActivityPicture } = require("../actions");
         const result = await updateActivityPicture({
           activityId: mockActivityId,
           pictureData: mockPictureData,
@@ -924,7 +923,6 @@ describe("Places Actions", () => {
 
         const consoleSpy = jest.spyOn(console, "error").mockImplementation();
 
-        const { updateActivityPicture } = require("../actions");
         const result = await updateActivityPicture({
           activityId: mockActivityId,
           pictureData: mockPictureData,
@@ -953,7 +951,6 @@ describe("Places Actions", () => {
 
         const consoleSpy = jest.spyOn(console, "error").mockImplementation();
 
-        const { updateActivityPicture } = require("../actions");
         const result = await updateActivityPicture({
           activityId: mockActivityId,
           pictureData: mockPictureData,
@@ -1007,7 +1004,6 @@ describe("Places Actions", () => {
         };
         mockSupabaseClient.from.mockReturnValue(mockActivitiesChain);
 
-        const { getUserLastActivity } = require("../actions");
         const result = await getUserLastActivity();
 
         expect(result).toEqual({
@@ -1041,7 +1037,6 @@ describe("Places Actions", () => {
         };
         mockSupabaseClient.from.mockReturnValue(mockActivitiesChain);
 
-        const { getUserLastActivity } = require("../actions");
         const result = await getUserLastActivity();
 
         expect(result).toEqual({
@@ -1058,7 +1053,6 @@ describe("Places Actions", () => {
           error: { message: "Auth error" },
         });
 
-        const { getUserLastActivity } = require("../actions");
         const result = await getUserLastActivity();
 
         expect(result).toEqual({
@@ -1086,7 +1080,6 @@ describe("Places Actions", () => {
 
         const consoleSpy = jest.spyOn(console, "error").mockImplementation();
 
-        const { getUserLastActivity } = require("../actions");
         const result = await getUserLastActivity();
 
         expect(result).toEqual({
@@ -1112,7 +1105,6 @@ describe("Places Actions", () => {
 
         const consoleSpy = jest.spyOn(console, "error").mockImplementation();
 
-        const { getUserLastActivity } = require("../actions");
         const result = await getUserLastActivity();
 
         expect(result).toEqual({

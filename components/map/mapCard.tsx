@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MapPin, Camera } from "lucide-react";
@@ -112,9 +113,11 @@ export function FriendLocationCard({
       {/* Activity picture (if available) */}
       {friend.lastPlace?.picture && (
         <div className="rounded-lg overflow-hidden border border-slate-700/50">
-          <img
+          <Image
             src={friend.lastPlace.picture}
             alt="Activity picture"
+            width={400}
+            height={192}
             className="w-full h-48 object-cover"
           />
         </div>
@@ -206,9 +209,11 @@ export function UserLocationCard({ user }: { user: FriendWithLastPlace }) {
       {/* Activity picture (if available) */}
       {user.lastPlace?.picture && (
         <div className="rounded-lg overflow-hidden border border-slate-700/50">
-          <img
+          <Image
             src={user.lastPlace.picture}
             alt="Your activity picture"
+            width={400}
+            height={192}
             className="w-full h-48 object-cover"
           />
         </div>

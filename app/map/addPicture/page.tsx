@@ -105,22 +105,41 @@ export default function AddPicturePage() {
     );
   }
 
-  // Show picture capture interface
+  // Show picture capture interface with change place option
   return (
-    <PictureCapture
-      onPictureTaken={handlePictureTaken}
-      onSkip={handleSkipPicture}
-      isLoading={isPictureSaving}
-      title={
-        lastActivity?.picture
-          ? "Update your picture"
-          : "Add a picture to your activity"
-      }
-      description={
-        lastActivity?.picture
-          ? "Take a new picture to replace your current one"
-          : "Capture the moment at your current location!"
-      }
-    />
+    <div className="max-w-md mx-auto space-y-4 p-4">
+      {/* Action buttons row */}
+      <div className="flex gap-2 justify-center">
+        <button
+          onClick={() => router.push("/map/addActivity")}
+          className="px-3 py-2 text-sm bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg transition-colors border border-slate-200 dark:border-slate-700"
+        >
+          Change Place
+        </button>
+        <button
+          onClick={handleSkipPicture}
+          className="px-3 py-2 text-sm bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded-lg transition-colors border border-blue-200 dark:border-blue-800"
+        >
+          Back to Map
+        </button>
+      </div>
+
+      {/* Picture capture component */}
+      <PictureCapture
+        onPictureTaken={handlePictureTaken}
+        onSkip={handleSkipPicture}
+        isLoading={isPictureSaving}
+        title={
+          lastActivity?.picture
+            ? "Update your picture"
+            : "Add a picture to your activity"
+        }
+        description={
+          lastActivity?.picture
+            ? "Take a new picture to replace your current one"
+            : "Capture the moment at your current location!"
+        }
+      />
+    </div>
   );
 }

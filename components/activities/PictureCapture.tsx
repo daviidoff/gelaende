@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Camera, RotateCcw, Check, X, Loader2, Upload } from "lucide-react";
@@ -23,6 +24,7 @@ export default function PictureCapture({
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [isStreamActive, setIsStreamActive] = useState(false);
+  const [isVideoReady, setIsVideoReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [cameraPermission, setCameraPermission] = useState<
     "granted" | "denied" | "prompt"
@@ -37,12 +39,6 @@ export default function PictureCapture({
     try {
       setError(null);
 
-      // Check camera permission first
-      const permission = await navigator.permissions.query({
-        name: "camera" as PermissionName,
-      });
-      setCameraPermission(permission.state);
-
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: {
           facingMode: "environment", // Prefer back camera
@@ -52,15 +48,48 @@ export default function PictureCapture({
       });
 
       setStream(mediaStream);
-      setIsStreamActive(true);
       setCameraPermission("granted");
+      setIsStreamActive(true); // Set this immediately so the video element renders
 
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
-      }
+      // Wait a bit for the video element to render, then set up the stream
+      const setupVideoStream = () => {
+        if (videoRef.current) {
+          const video = videoRef.current;
+          video.srcObject = mediaStream;
+          
+          // Set up event handlers
+          const handleLoadedMetadata = () => {
+            console.log("Video metadata loaded, dimensions:", video.videoWidth, "x", video.videoHeight);
+            setIsVideoReady(true);
+          };
+
+          const handleCanPlay = () => {
+            console.log("Video can play");
+          };
+
+          const handleError = (e: string | Event) => {
+            console.error("Video error:", e);
+            setError("Video playback error. Please try again.");
+            setIsStreamActive(false);
+          };
+
+          video.onloadedmetadata = handleLoadedMetadata;
+          video.oncanplay = handleCanPlay;
+          video.onerror = handleError;
+          
+          console.log("Video stream setup complete");
+        } else {
+          // Retry after a short delay if video element isn't ready
+          setTimeout(setupVideoStream, 100);
+        }
+      };
+
+      // Start the setup process
+      setupVideoStream();
     } catch (err) {
       console.error("Error accessing camera:", err);
       setCameraPermission("denied");
+      setIsStreamActive(false);
 
       if (err instanceof Error) {
         if (err.name === "NotAllowedError") {
@@ -84,6 +113,7 @@ export default function PictureCapture({
       stream.getTracks().forEach((track) => track.stop());
       setStream(null);
       setIsStreamActive(false);
+      setIsVideoReady(false);
     }
   }, [stream]);
 
@@ -98,8 +128,8 @@ export default function PictureCapture({
     if (!context) return;
 
     // Set canvas dimensions to match video
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 480;
 
     // Draw video frame to canvas
     context.drawImage(video, 0, 0, canvas.width, canvas.height);
@@ -145,6 +175,7 @@ export default function PictureCapture({
   const retakePhoto = useCallback(() => {
     setCapturedImage(null);
     setError(null);
+    setIsVideoReady(false);
     startCamera();
   }, [startCamera]);
 
@@ -181,9 +212,11 @@ export default function PictureCapture({
           <div className="relative aspect-[4/3] bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden">
             {capturedImage ? (
               /* Captured Image Preview */
-              <img
+              <Image
                 src={capturedImage}
                 alt="Captured"
+                width={400}
+                height={300}
                 className="w-full h-full object-cover"
               />
             ) : isStreamActive ? (
@@ -194,6 +227,7 @@ export default function PictureCapture({
                 playsInline
                 muted
                 className="w-full h-full object-cover"
+                onLoadedData={() => console.log("Video loaded data")}
               />
             ) : (
               /* Placeholder */
@@ -262,12 +296,10 @@ export default function PictureCapture({
                 onClick={startCamera}
                 size="lg"
                 className="w-full"
-                disabled={isLoading || cameraPermission === "denied"}
+                disabled={isLoading}
               >
                 <Camera className="w-4 h-4 mr-2" />
-                {cameraPermission === "denied"
-                  ? "Camera Access Denied"
-                  : "Start Camera"}
+                Start Camera
               </Button>
             )}
 

@@ -1,10 +1,12 @@
-import React from "react";
-import Link from "next/link";
-import Image from "next/image";
-import { Card, CardContent } from "@/components/ui/card";
+"use client";
+
 import { Button } from "@/components/ui/button";
-import { MapPin, Camera } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import { FriendWithLastPlace } from "@/components/users/friendships/data";
+import { Camera, MapPin } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { PingButton } from "./PingButton";
 
 // BeReal-style time formatting function
 function formatBeRealTime(timestamp: string): string {
@@ -108,6 +110,19 @@ export function FriendLocationCard({
           </div>
           <p className="text-sm text-slate-400 leading-tight">{timeDisplay}</p>
         </div>
+
+        {/* Ping Button */}
+        <PingButton
+          friendId={friend.user_id}
+          friendName={friend.name}
+          onPingClick={(success, message) => {
+            if (success) {
+              console.log(`✅ ${message}`);
+            } else {
+              console.error(`❌ ${message}`);
+            }
+          }}
+        />
       </div>
 
       {/* Activity picture (if available) */}

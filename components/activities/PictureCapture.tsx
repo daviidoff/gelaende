@@ -24,11 +24,7 @@ export default function PictureCapture({
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [isStreamActive, setIsStreamActive] = useState(false);
-  const [isVideoReady, setIsVideoReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [cameraPermission, setCameraPermission] = useState<
-    "granted" | "denied" | "prompt"
-  >("prompt");
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -48,7 +44,6 @@ export default function PictureCapture({
       });
 
       setStream(mediaStream);
-      setCameraPermission("granted");
       setIsStreamActive(true); // Set this immediately so the video element renders
 
       // Wait a bit for the video element to render, then set up the stream
@@ -56,16 +51,10 @@ export default function PictureCapture({
         if (videoRef.current) {
           const video = videoRef.current;
           video.srcObject = mediaStream;
-
+          
           // Set up event handlers
           const handleLoadedMetadata = () => {
-            console.log(
-              "Video metadata loaded, dimensions:",
-              video.videoWidth,
-              "x",
-              video.videoHeight
-            );
-            setIsVideoReady(true);
+            console.log("Video metadata loaded, dimensions:", video.videoWidth, "x", video.videoHeight);
           };
 
           const handleCanPlay = () => {
@@ -81,7 +70,7 @@ export default function PictureCapture({
           video.onloadedmetadata = handleLoadedMetadata;
           video.oncanplay = handleCanPlay;
           video.onerror = handleError;
-
+          
           console.log("Video stream setup complete");
         } else {
           // Retry after a short delay if video element isn't ready
@@ -93,7 +82,6 @@ export default function PictureCapture({
       setupVideoStream();
     } catch (err) {
       console.error("Error accessing camera:", err);
-      setCameraPermission("denied");
       setIsStreamActive(false);
 
       if (err instanceof Error) {
@@ -118,7 +106,6 @@ export default function PictureCapture({
       stream.getTracks().forEach((track) => track.stop());
       setStream(null);
       setIsStreamActive(false);
-      setIsVideoReady(false);
     }
   }, [stream]);
 
@@ -180,7 +167,6 @@ export default function PictureCapture({
   const retakePhoto = useCallback(() => {
     setCapturedImage(null);
     setError(null);
-    setIsVideoReady(false);
     startCamera();
   }, [startCamera]);
 

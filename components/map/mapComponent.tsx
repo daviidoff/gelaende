@@ -52,20 +52,6 @@ export default async function MapComponent() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6 space-y-8">
-      {/* Hero Header Section */}
-      <div className="text-center mb-8">
-        <div className="relative inline-block">
-          <h2 className="text-4xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-teal-400 bg-clip-text text-transparent mb-4">
-            Friends Map
-          </h2>
-          <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-teal-500/20 blur-lg -z-10" />
-        </div>
-        <p className="text-slate-400 text-lg max-w-2xl mx-auto">
-          Discover where your friends were last spotted, sorted by most recent
-          activity
-        </p>
-      </div>
-
       {/* Current User Section */}
       {currentUserResult.success && currentUserResult.data && (
         <div className="flex justify-center">

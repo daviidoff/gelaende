@@ -56,10 +56,15 @@ export default function PictureCapture({
         if (videoRef.current) {
           const video = videoRef.current;
           video.srcObject = mediaStream;
-          
+
           // Set up event handlers
           const handleLoadedMetadata = () => {
-            console.log("Video metadata loaded, dimensions:", video.videoWidth, "x", video.videoHeight);
+            console.log(
+              "Video metadata loaded, dimensions:",
+              video.videoWidth,
+              "x",
+              video.videoHeight
+            );
             setIsVideoReady(true);
           };
 
@@ -76,7 +81,7 @@ export default function PictureCapture({
           video.onloadedmetadata = handleLoadedMetadata;
           video.oncanplay = handleCanPlay;
           video.onerror = handleError;
-          
+
           console.log("Video stream setup complete");
         } else {
           // Retry after a short delay if video element isn't ready

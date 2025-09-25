@@ -3,7 +3,10 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import PictureCapture from "@/components/activities/PictureCapture";
-import { getUserLastActivity, updateActivityPicture } from "@/components/activities/actions";
+import {
+  getUserLastActivity,
+  updateActivityPicture,
+} from "@/components/activities/actions";
 import type { Database } from "@/lib/types/database";
 
 type Activity = Database["public"]["Tables"]["activities"]["Row"];
@@ -20,7 +23,7 @@ export default function AddPicturePage() {
     async function fetchLastActivity() {
       try {
         const result = await getUserLastActivity();
-        
+
         if (result.success && result.activity) {
           setLastActivity(result.activity);
         } else {
@@ -73,7 +76,9 @@ export default function AddPicturePage() {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center space-y-2">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="text-muted-foreground">Loading your recent activity...</p>
+          <p className="text-muted-foreground">
+            Loading your recent activity...
+          </p>
         </div>
       </div>
     );
@@ -84,11 +89,10 @@ export default function AddPicturePage() {
     return (
       <div className="flex items-center justify-center min-h-screen p-4">
         <div className="text-center space-y-4 max-w-md">
-          <div className="text-red-500 text-lg font-medium">
-            {error}
-          </div>
+          <div className="text-red-500 text-lg font-medium">{error}</div>
           <p className="text-muted-foreground">
-            You need to have a recent activity to add a picture. Try setting your location first.
+            You need to have a recent activity to add a picture. Try setting
+            your location first.
           </p>
           <button
             onClick={() => router.push("/map")}
@@ -107,10 +111,14 @@ export default function AddPicturePage() {
       onPictureTaken={handlePictureTaken}
       onSkip={handleSkipPicture}
       isLoading={isPictureSaving}
-      title={lastActivity?.picture ? "Update your picture" : "Add a picture to your activity"}
+      title={
+        lastActivity?.picture
+          ? "Update your picture"
+          : "Add a picture to your activity"
+      }
       description={
-        lastActivity?.picture 
-          ? "Take a new picture to replace your current one" 
+        lastActivity?.picture
+          ? "Take a new picture to replace your current one"
           : "Capture the moment at your current location!"
       }
     />

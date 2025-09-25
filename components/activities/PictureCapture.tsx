@@ -24,8 +24,10 @@ export default function PictureCapture({
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [isStreamActive, setIsStreamActive] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [cameraPermission, setCameraPermission] = useState<"granted" | "denied" | "prompt">("prompt");
-  
+  const [cameraPermission, setCameraPermission] = useState<
+    "granted" | "denied" | "prompt"
+  >("prompt");
+
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -34,37 +36,43 @@ export default function PictureCapture({
   const startCamera = useCallback(async () => {
     try {
       setError(null);
-      
+
       // Check camera permission first
-      const permission = await navigator.permissions.query({ name: 'camera' as PermissionName });
+      const permission = await navigator.permissions.query({
+        name: "camera" as PermissionName,
+      });
       setCameraPermission(permission.state);
-      
+
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: {
-          facingMode: 'environment', // Prefer back camera
+          facingMode: "environment", // Prefer back camera
           width: { ideal: 1280 },
-          height: { ideal: 720 }
-        }
+          height: { ideal: 720 },
+        },
       });
-      
+
       setStream(mediaStream);
       setIsStreamActive(true);
-      setCameraPermission('granted');
-      
+      setCameraPermission("granted");
+
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream;
       }
     } catch (err) {
       console.error("Error accessing camera:", err);
-      setCameraPermission('denied');
-      
+      setCameraPermission("denied");
+
       if (err instanceof Error) {
-        if (err.name === 'NotAllowedError') {
-          setError("Camera access denied. Please enable camera permissions and try again.");
-        } else if (err.name === 'NotFoundError') {
+        if (err.name === "NotAllowedError") {
+          setError(
+            "Camera access denied. Please enable camera permissions and try again."
+          );
+        } else if (err.name === "NotFoundError") {
           setError("No camera found. Please use the upload option instead.");
         } else {
-          setError("Failed to access camera. Please try uploading a picture instead.");
+          setError(
+            "Failed to access camera. Please try uploading a picture instead."
+          );
         }
       }
     }
@@ -73,7 +81,7 @@ export default function PictureCapture({
   // Stop camera stream
   const stopCamera = useCallback(() => {
     if (stream) {
-      stream.getTracks().forEach(track => track.stop());
+      stream.getTracks().forEach((track) => track.stop());
       setStream(null);
       setIsStreamActive(false);
     }
@@ -82,51 +90,56 @@ export default function PictureCapture({
   // Capture photo from video stream
   const capturePhoto = useCallback(() => {
     if (!videoRef.current || !canvasRef.current) return;
-    
+
     const video = videoRef.current;
     const canvas = canvasRef.current;
-    const context = canvas.getContext('2d');
-    
+    const context = canvas.getContext("2d");
+
     if (!context) return;
-    
+
     // Set canvas dimensions to match video
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
-    
+
     // Draw video frame to canvas
     context.drawImage(video, 0, 0, canvas.width, canvas.height);
-    
+
     // Convert to base64
-    const imageData = canvas.toDataURL('image/jpeg', 0.8);
+    const imageData = canvas.toDataURL("image/jpeg", 0.8);
     setCapturedImage(imageData);
     stopCamera();
   }, [stopCamera]);
 
   // Handle file upload
-  const handleFileUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      setError("Please select an image file.");
-      return;
-    }
-    
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      setError("Image file is too large. Please select an image smaller than 5MB.");
-      return;
-    }
-    
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const result = e.target?.result as string;
-      setCapturedImage(result);
-      setError(null);
-    };
-    reader.readAsDataURL(file);
-  }, []);
+  const handleFileUpload = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+
+      // Validate file type
+      if (!file.type.startsWith("image/")) {
+        setError("Please select an image file.");
+        return;
+      }
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setError(
+          "Image file is too large. Please select an image smaller than 5MB."
+        );
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        setCapturedImage(result);
+        setError(null);
+      };
+      reader.readAsDataURL(file);
+    },
+    []
+  );
 
   // Retake photo
   const retakePhoto = useCallback(() => {
@@ -138,7 +151,7 @@ export default function PictureCapture({
   // Save photo
   const savePicture = useCallback(async () => {
     if (!capturedImage) return;
-    
+
     try {
       await onPictureTaken(capturedImage);
     } catch (err) {
@@ -168,9 +181,9 @@ export default function PictureCapture({
           <div className="relative aspect-[4/3] bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden">
             {capturedImage ? (
               /* Captured Image Preview */
-              <img 
-                src={capturedImage} 
-                alt="Captured" 
+              <img
+                src={capturedImage}
+                alt="Captured"
                 className="w-full h-full object-cover"
               />
             ) : isStreamActive ? (
@@ -192,7 +205,7 @@ export default function PictureCapture({
               </div>
             )}
           </div>
-          
+
           {/* Error Message */}
           {error && (
             <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
@@ -249,13 +262,15 @@ export default function PictureCapture({
                 onClick={startCamera}
                 size="lg"
                 className="w-full"
-                disabled={isLoading || cameraPermission === 'denied'}
+                disabled={isLoading || cameraPermission === "denied"}
               >
                 <Camera className="w-4 h-4 mr-2" />
-                {cameraPermission === 'denied' ? 'Camera Access Denied' : 'Start Camera'}
+                {cameraPermission === "denied"
+                  ? "Camera Access Denied"
+                  : "Start Camera"}
               </Button>
             )}
-            
+
             <div className="relative">
               <Button
                 onClick={() => fileInputRef.current?.click()}
@@ -277,7 +292,7 @@ export default function PictureCapture({
             </div>
           </div>
         )}
-        
+
         {/* Skip Button */}
         <Button
           onClick={onSkip}

@@ -216,6 +216,7 @@ describe("User Places Actions", () => {
     const mockActivity = {
       activity_id: "activity-789",
       time: "2023-01-01T12:00:00Z",
+      picture: "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABg...",
       places: {
         place_id: "place-456",
         name: "Central Park",
@@ -256,6 +257,7 @@ describe("User Places Actions", () => {
       expect(mockActivityChain.select).toHaveBeenCalledWith(`
         activity_id,
         time,
+        picture,
         places (
           place_id,
           name,
@@ -366,6 +368,7 @@ describe("User Places Actions", () => {
     const mockActivities = [
       {
         time: "2023-01-01T12:00:00Z",
+        picture: "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABg...",
         places: {
           place_id: "place-1",
           name: "Central Park",
@@ -374,6 +377,7 @@ describe("User Places Actions", () => {
       },
       {
         time: "2023-01-01T10:00:00Z",
+        picture: null,
         places: {
           place_id: "place-2",
           name: "Times Square",
@@ -382,6 +386,7 @@ describe("User Places Actions", () => {
       },
       {
         time: "2023-01-01T08:00:00Z",
+        picture: "data:image/jpeg;base64,olderpicture...",
         places: {
           place_id: "place-1",
           name: "Central Park",
@@ -421,6 +426,17 @@ describe("User Places Actions", () => {
         : result.places![1].places;
       expect(firstPlace.place_id).toBe("place-1"); // Most recent Central Park
       expect(secondPlace.place_id).toBe("place-2"); // Times Square
+
+      // Verify the select query includes picture field
+      expect(mockActivityChain.select).toHaveBeenCalledWith(`
+        time,
+        picture,
+        places (
+          place_id,
+          name,
+          location
+        )
+      `);
     });
 
     it("should get places for specific user when userId provided", async () => {

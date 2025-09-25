@@ -85,7 +85,9 @@ export default function AddActivityComponent() {
   const [isSettingPlace, setIsSettingPlace] = useState<string | null>(null);
 
   // Picture capture flow state
-  const [createdActivity, setCreatedActivity] = useState<Database["public"]["Tables"]["activities"]["Row"] | null>(null);
+  const [createdActivity, setCreatedActivity] = useState<
+    Database["public"]["Tables"]["activities"]["Row"] | null
+  >(null);
   const [showPictureCapture, setShowPictureCapture] = useState(false);
   const [isPictureSaving, setIsPictureSaving] = useState(false);
 

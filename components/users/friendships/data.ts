@@ -243,6 +243,7 @@ export interface Place {
 export interface Activity {
   activity_id: string;
   time: string;
+  picture: string | null;
   places: Place | Place[];
 }
 

@@ -1,5 +1,9 @@
 import { getPlaces, getPlacesPaginated } from "../data";
-import { addActivity } from "../actions";
+import {
+  addActivity,
+  updateActivityPicture,
+  getUserLastActivity,
+} from "../actions";
 import { createClient } from "@/lib/supabase/server";
 
 // Mock modules
@@ -755,6 +759,361 @@ describe("Places Actions", () => {
 
         expect(consoleSpy).toHaveBeenCalledWith(
           "Unexpected error in addActivity:",
+          expect.any(Error)
+        );
+
+        consoleSpy.mockRestore();
+      });
+    });
+  });
+
+  describe("updateActivityPicture", () => {
+    const mockUserId = "user-123";
+    const mockActivityId = "activity-123";
+    const mockPictureData =
+      "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABg...";
+    const mockActivity = {
+      activity_id: mockActivityId,
+      user_id: mockUserId,
+      place_id: "place-123",
+      time: "2023-01-01T12:00:00Z",
+      picture: mockPictureData,
+      created_at: "2023-01-01T12:00:00Z",
+      updated_at: "2023-01-01T12:00:00Z",
+    };
+
+    beforeEach(() => {
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: { id: mockUserId } },
+        error: null,
+      });
+    });
+
+    describe("Success cases", () => {
+      it("should successfully update activity picture", async () => {
+        const mockActivitiesChain = {
+          update: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockReturnThis(),
+          select: jest.fn().mockReturnThis(),
+          single: jest.fn().mockResolvedValue({
+            data: mockActivity,
+            error: null,
+          }),
+        };
+        mockSupabaseClient.from.mockReturnValue(mockActivitiesChain);
+
+        const result = await updateActivityPicture({
+          activityId: mockActivityId,
+          pictureData: mockPictureData,
+        });
+
+        expect(result).toEqual({
+          success: true,
+          message: "Picture added successfully",
+          activity: mockActivity,
+        });
+
+        expect(mockSupabaseClient.from).toHaveBeenCalledWith("activities");
+        expect(mockActivitiesChain.update).toHaveBeenCalledWith({
+          picture: mockPictureData,
+        });
+        expect(mockActivitiesChain.eq).toHaveBeenCalledWith(
+          "activity_id",
+          mockActivityId
+        );
+        expect(mockActivitiesChain.eq).toHaveBeenCalledWith(
+          "user_id",
+          mockUserId
+        );
+      });
+    });
+
+    describe("Validation", () => {
+      it("should fail when activityId is empty", async () => {
+        const result = await updateActivityPicture({
+          activityId: "",
+          pictureData: mockPictureData,
+        });
+
+        expect(result).toEqual({
+          success: false,
+          message: "Activity ID is required",
+        });
+
+        expect(mockSupabaseClient.from).not.toHaveBeenCalled();
+      });
+
+      it("should fail when pictureData is empty", async () => {
+        const result = await updateActivityPicture({
+          activityId: mockActivityId,
+          pictureData: "",
+        });
+
+        expect(result).toEqual({
+          success: false,
+          message: "Picture data is required",
+        });
+
+        expect(mockSupabaseClient.from).not.toHaveBeenCalled();
+      });
+
+      it("should fail when authentication error occurs", async () => {
+        mockSupabaseClient.auth.getUser.mockResolvedValue({
+          data: { user: null },
+          error: { message: "Auth error" },
+        });
+
+        const result = await updateActivityPicture({
+          activityId: mockActivityId,
+          pictureData: mockPictureData,
+        });
+
+        expect(result).toEqual({
+          success: false,
+          message: "Authentication required",
+        });
+
+        expect(mockSupabaseClient.from).not.toHaveBeenCalled();
+      });
+    });
+
+    describe("Database errors", () => {
+      it("should handle activity not found error", async () => {
+        const mockActivitiesChain = {
+          update: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockReturnThis(),
+          select: jest.fn().mockReturnThis(),
+          single: jest.fn().mockResolvedValue({
+            data: null,
+            error: {
+              code: "PGRST116",
+              message: "No rows found",
+            },
+          }),
+        };
+        mockSupabaseClient.from.mockReturnValue(mockActivitiesChain);
+
+        const consoleSpy = jest.spyOn(console, "error").mockImplementation();
+
+        const result = await updateActivityPicture({
+          activityId: mockActivityId,
+          pictureData: mockPictureData,
+        });
+
+        expect(result).toEqual({
+          success: false,
+          message:
+            "Activity not found or you don't have permission to update it",
+        });
+
+        consoleSpy.mockRestore();
+      });
+
+      it("should handle generic database error", async () => {
+        const mockActivitiesChain = {
+          update: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockReturnThis(),
+          select: jest.fn().mockReturnThis(),
+          single: jest.fn().mockResolvedValue({
+            data: null,
+            error: { message: "Database error", code: "PGRST500" },
+          }),
+        };
+        mockSupabaseClient.from.mockReturnValue(mockActivitiesChain);
+
+        const consoleSpy = jest.spyOn(console, "error").mockImplementation();
+
+        const result = await updateActivityPicture({
+          activityId: mockActivityId,
+          pictureData: mockPictureData,
+        });
+
+        expect(result).toEqual({
+          success: false,
+          message: "Failed to update activity picture",
+        });
+
+        expect(consoleSpy).toHaveBeenCalledWith(
+          "Error updating activity picture:",
+          {
+            message: "Database error",
+            code: "PGRST500",
+          }
+        );
+
+        consoleSpy.mockRestore();
+      });
+
+      it("should handle unexpected errors", async () => {
+        mockSupabaseClient.from.mockImplementation(() => {
+          throw new Error("Unexpected error");
+        });
+
+        const consoleSpy = jest.spyOn(console, "error").mockImplementation();
+
+        const result = await updateActivityPicture({
+          activityId: mockActivityId,
+          pictureData: mockPictureData,
+        });
+
+        expect(result).toEqual({
+          success: false,
+          message: "An unexpected error occurred",
+        });
+
+        expect(consoleSpy).toHaveBeenCalledWith(
+          "Unexpected error in updateActivityPicture:",
+          expect.any(Error)
+        );
+
+        consoleSpy.mockRestore();
+      });
+    });
+  });
+
+  describe("getUserLastActivity", () => {
+    const mockUserId = "user-123";
+    const mockActivity = {
+      activity_id: "activity-123",
+      user_id: mockUserId,
+      place_id: "place-123",
+      time: "2023-01-01T12:00:00Z",
+      picture: null,
+      created_at: "2023-01-01T12:00:00Z",
+      updated_at: "2023-01-01T12:00:00Z",
+    };
+
+    beforeEach(() => {
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: { id: mockUserId } },
+        error: null,
+      });
+    });
+
+    describe("Success cases", () => {
+      it("should successfully get user's last activity", async () => {
+        const mockActivitiesChain = {
+          select: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockReturnThis(),
+          order: jest.fn().mockReturnThis(),
+          limit: jest.fn().mockReturnThis(),
+          maybeSingle: jest.fn().mockResolvedValue({
+            data: mockActivity,
+            error: null,
+          }),
+        };
+        mockSupabaseClient.from.mockReturnValue(mockActivitiesChain);
+
+        const result = await getUserLastActivity();
+
+        expect(result).toEqual({
+          success: true,
+          message: "Last activity retrieved successfully",
+          activity: mockActivity,
+        });
+
+        expect(mockSupabaseClient.from).toHaveBeenCalledWith("activities");
+        expect(mockActivitiesChain.select).toHaveBeenCalledWith("*");
+        expect(mockActivitiesChain.eq).toHaveBeenCalledWith(
+          "user_id",
+          mockUserId
+        );
+        expect(mockActivitiesChain.order).toHaveBeenCalledWith("time", {
+          ascending: false,
+        });
+        expect(mockActivitiesChain.limit).toHaveBeenCalledWith(1);
+      });
+
+      it("should handle no activities found", async () => {
+        const mockActivitiesChain = {
+          select: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockReturnThis(),
+          order: jest.fn().mockReturnThis(),
+          limit: jest.fn().mockReturnThis(),
+          maybeSingle: jest.fn().mockResolvedValue({
+            data: null,
+            error: null,
+          }),
+        };
+        mockSupabaseClient.from.mockReturnValue(mockActivitiesChain);
+
+        const result = await getUserLastActivity();
+
+        expect(result).toEqual({
+          success: false,
+          message: "No recent activities found",
+        });
+      });
+    });
+
+    describe("Authentication", () => {
+      it("should fail when authentication error occurs", async () => {
+        mockSupabaseClient.auth.getUser.mockResolvedValue({
+          data: { user: null },
+          error: { message: "Auth error" },
+        });
+
+        const result = await getUserLastActivity();
+
+        expect(result).toEqual({
+          success: false,
+          message: "Authentication required",
+        });
+
+        expect(mockSupabaseClient.from).not.toHaveBeenCalled();
+      });
+    });
+
+    describe("Database errors", () => {
+      it("should handle database error", async () => {
+        const mockActivitiesChain = {
+          select: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockReturnThis(),
+          order: jest.fn().mockReturnThis(),
+          limit: jest.fn().mockReturnThis(),
+          maybeSingle: jest.fn().mockResolvedValue({
+            data: null,
+            error: { message: "Database error", code: "PGRST500" },
+          }),
+        };
+        mockSupabaseClient.from.mockReturnValue(mockActivitiesChain);
+
+        const consoleSpy = jest.spyOn(console, "error").mockImplementation();
+
+        const result = await getUserLastActivity();
+
+        expect(result).toEqual({
+          success: false,
+          message: "Failed to fetch recent activity",
+        });
+
+        expect(consoleSpy).toHaveBeenCalledWith(
+          "Error fetching last activity:",
+          {
+            message: "Database error",
+            code: "PGRST500",
+          }
+        );
+
+        consoleSpy.mockRestore();
+      });
+
+      it("should handle unexpected errors", async () => {
+        mockSupabaseClient.from.mockImplementation(() => {
+          throw new Error("Unexpected error");
+        });
+
+        const consoleSpy = jest.spyOn(console, "error").mockImplementation();
+
+        const result = await getUserLastActivity();
+
+        expect(result).toEqual({
+          success: false,
+          message: "An unexpected error occurred",
+        });
+
+        expect(consoleSpy).toHaveBeenCalledWith(
+          "Unexpected error in getUserLastActivity:",
           expect.any(Error)
         );
 

@@ -1,15 +1,15 @@
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MapPin } from "lucide-react";
+import { MapPin, Camera } from "lucide-react";
 import { FriendWithLastPlace } from "@/components/users/friendships/data";
 
 // BeReal-style time formatting function
 function formatBeRealTime(timestamp: string): string {
   const now = new Date();
   const past = new Date(timestamp);
-  console.log("now:", now, "past:", past);
 
   // Check if the past date is valid
   if (isNaN(past.getTime())) {
@@ -84,7 +84,6 @@ export function FriendLocationCard({
 }: {
   friend: FriendWithLastPlace;
 }) {
-  console.log("FRIENDS STAMP: ", friend.lastPlace?.time);
   const placeName = getPlaceName(friend.lastPlace);
   const timeDisplay = friend.lastPlace?.time
     ? formatBeRealTime(friend.lastPlace.time)
@@ -110,6 +109,19 @@ export function FriendLocationCard({
           <p className="text-sm text-slate-400 leading-tight">{timeDisplay}</p>
         </div>
       </div>
+
+      {/* Activity picture (if available) */}
+      {friend.lastPlace?.picture && (
+        <div className="rounded-lg overflow-hidden border border-slate-700/50">
+          <Image
+            src={friend.lastPlace.picture}
+            alt="Activity picture"
+            width={400}
+            height={192}
+            className="w-full h-48 object-cover"
+          />
+        </div>
+      )}
 
       {/* Location card */}
       <Card className="bg-slate-800/90 border-slate-700/50 hover:border-slate-600/70 transition-colors">
@@ -173,13 +185,6 @@ export function UserLocationCard({ user }: { user: FriendWithLastPlace }) {
     ? formatBeRealTime(user.lastPlace.time)
     : "No recent activity";
 
-  console.log(
-    "Rendering UserLocationCard with time:",
-    user.lastPlace?.time,
-    "formatted as:",
-    timeDisplay
-  );
-
   return (
     <div className="space-y-3">
       {/* BeReal-style user header */}
@@ -201,6 +206,19 @@ export function UserLocationCard({ user }: { user: FriendWithLastPlace }) {
         </div>
       </div>
 
+      {/* Activity picture (if available) */}
+      {user.lastPlace?.picture && (
+        <div className="rounded-lg overflow-hidden border border-slate-700/50">
+          <Image
+            src={user.lastPlace.picture}
+            alt="Your activity picture"
+            width={400}
+            height={192}
+            className="w-full h-48 object-cover"
+          />
+        </div>
+      )}
+
       {/* Location card with change place button */}
       <Card className="bg-slate-800/90 border-slate-700/50 hover:border-slate-600/70 transition-colors">
         <CardContent className="p-4 space-y-3">
@@ -213,16 +231,31 @@ export function UserLocationCard({ user }: { user: FriendWithLastPlace }) {
             </div>
           </div>
 
-          {/* Change Place Button */}
-          <Link href="/map/addActivity" className="block">
-            <Button
-              className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white border-0 shadow-md hover:shadow-lg transition-all duration-200"
-              size="sm"
-            >
-              <MapPin className="w-4 h-4 mr-2" />
-              Change Place
-            </Button>
-          </Link>
+          {/* Action Buttons */}
+          <div className="space-y-2">
+            <Link href="/map/addActivity" className="block">
+              <Button
+                className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white border-0 shadow-md hover:shadow-lg transition-all duration-200"
+                size="sm"
+              >
+                <MapPin className="w-4 h-4 mr-2" />
+                Change Place
+              </Button>
+            </Link>
+
+            {user.lastPlace && (
+              <Link href="/map/addPicture" className="block">
+                <Button
+                  className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white border-0 shadow-md hover:shadow-lg transition-all duration-200"
+                  size="sm"
+                  variant="outline"
+                >
+                  <Camera className="w-4 h-4 mr-2" />
+                  {user.lastPlace.picture ? "Update Picture" : "Add Picture"}
+                </Button>
+              </Link>
+            )}
+          </div>
         </CardContent>
       </Card>
     </div>

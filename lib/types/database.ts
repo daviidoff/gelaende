@@ -62,6 +62,7 @@ export interface Database {
           user_id: string;
           place_id: string;
           time: string;
+          picture: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -70,6 +71,7 @@ export interface Database {
           user_id: string;
           place_id: string;
           time: string;
+          picture?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -78,6 +80,7 @@ export interface Database {
           user_id?: string;
           place_id?: string;
           time?: string;
+          picture?: string | null;
           created_at?: string;
           updated_at?: string;
         };

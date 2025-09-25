@@ -6,8 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { getPlacesPaginated, GetPlacesParams } from "./data";
 import { getUserPlaces } from "@/components/users/places/data";
-import { addActivity } from "./actions";
+import { addActivity, updateActivityPicture } from "./actions";
 import { PlaceCard, PlaceCardData } from "./PlaceCard";
+import PictureCapture from "./PictureCapture";
 import { Search, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import type { Database } from "@/lib/types/database";
 
@@ -82,6 +83,13 @@ export default function AddActivityComponent() {
   const [isLoadingRecent, setIsLoadingRecent] = useState(true);
   const [isLoadingSearch, setIsLoadingSearch] = useState(false);
   const [isSettingPlace, setIsSettingPlace] = useState<string | null>(null);
+
+  // Picture capture flow state
+  const [createdActivity, setCreatedActivity] = useState<
+    Database["public"]["Tables"]["activities"]["Row"] | null
+  >(null);
+  const [showPictureCapture, setShowPictureCapture] = useState(false);
+  const [isPictureSaving, setIsPictureSaving] = useState(false);
 
   // Selected state management
   const [selectedPlace, setSelectedPlace] = useState<string | null>(null);
@@ -282,9 +290,10 @@ export default function AddActivityComponent() {
 
     try {
       const result = await addActivity({ place_id: placeId });
-      if (result.success) {
-        // Redirect to map page after successfully creating the activity
-        router.push("/map");
+      if (result.success && result.activity) {
+        // Store the created activity and show picture capture
+        setCreatedActivity(result.activity);
+        setShowPictureCapture(true);
       } else {
         console.error("Failed to create activity:", result.message);
         // Reset selection on error
@@ -300,6 +309,38 @@ export default function AddActivityComponent() {
       setFadeIntensity(0);
     }
     setIsSettingPlace(null);
+  };
+
+  // Handle picture capture
+  const handlePictureTaken = async (pictureData: string) => {
+    if (!createdActivity) return;
+
+    setIsPictureSaving(true);
+    try {
+      const result = await updateActivityPicture({
+        activityId: createdActivity.activity_id,
+        pictureData: pictureData,
+      });
+
+      if (result.success) {
+        // Picture saved successfully, redirect to map
+        router.push("/map");
+      } else {
+        console.error("Failed to save picture:", result.message);
+        // Show error but don't prevent navigation
+        // User can still go to map page
+        router.push("/map");
+      }
+    } catch (error) {
+      console.error("Error saving picture:", error);
+      // Still redirect to map page
+      router.push("/map");
+    }
+  };
+
+  // Handle skipping picture capture
+  const handleSkipPicture = () => {
+    router.push("/map");
   };
 
   // Load recent places on mount
@@ -339,6 +380,19 @@ export default function AddActivityComponent() {
   const isShowingSearchResults = debouncedSearchTerm.trim().length > 0;
   const placesToShow = isShowingSearchResults ? searchResults : recentPlaces;
   const isLoading = isLoadingRecent || isLoadingSearch;
+
+  // Show picture capture screen after activity is created
+  if (showPictureCapture && createdActivity) {
+    return (
+      <PictureCapture
+        onPictureTaken={handlePictureTaken}
+        onSkip={handleSkipPicture}
+        isLoading={isPictureSaving}
+        title="Add a picture to your activity"
+        description="Capture the moment at your location!"
+      />
+    );
+  }
 
   return (
     <div className="w-full max-w-2xl mx-auto space-y-6">

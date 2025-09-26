@@ -1,16 +1,16 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { getPlacesPaginated, GetPlacesParams } from "./data";
+import { Input } from "@/components/ui/input";
 import { getUserPlaces } from "@/components/users/places/data";
-import { addActivity, updateActivityPicture } from "./actions";
-import { PlaceCard, PlaceCardData } from "./PlaceCard";
-import PictureCapture from "./PictureCapture";
-import { Search, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import type { Database } from "@/lib/types/database";
+import { ChevronLeft, ChevronRight, Loader2, Search } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
+import PlaceCard, { PlaceCardData } from "../users/places/PlaceCard";
+import { addActivity, updateActivityPicture } from "./actions";
+import { getPlacesPaginated, GetPlacesParams } from "./data";
+import PictureCapture from "./PictureCapture";
 
 type Place = Database["public"]["Tables"]["places"]["Row"];
 

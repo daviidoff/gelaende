@@ -1,13 +1,12 @@
-import React from "react";
-import {
-  getFriendsWithLastPlaces,
-  getCurrentUserWithLastPlace,
-} from "@/components/users/friendships/data";
 import {
   FriendLocationCard,
   NoActivityCard,
   UserLocationCard,
-} from "@/components/map/mapCard";
+} from "@/components/tabs/map/mapCard";
+import {
+  getCurrentUserWithLastPlace,
+  getFriendsWithLastPlaces,
+} from "@/components/users/friendships/data";
 
 // Main Map Component
 export default async function MapComponent() {

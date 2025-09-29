@@ -19,13 +19,13 @@ export default async function MapComponent() {
   // Handle errors for friends data
   if (!friendsResult.success || !friendsResult.data) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6 flex items-center justify-center">
+      <div className="min-h-screen bg-background p-6 flex items-center justify-center">
         <div className="text-center space-y-4">
-          <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-r from-red-500/20 to-orange-500/20 flex items-center justify-center text-3xl border border-red-500/30">
+          <div className="w-20 h-20 mx-auto rounded-full bg-muted flex items-center justify-center text-3xl border">
             ⚠️
           </div>
-          <h2 className="text-2xl font-bold text-white">Friends Map</h2>
-          <div className="text-slate-400 max-w-md">
+          <h2 className="text-2xl font-bold text-foreground">Friends Map</h2>
+          <div className="text-muted-foreground max-w-md">
             <p className="text-lg">
               {friendsResult.message || "Failed to load friends locations"}
             </p>
@@ -50,60 +50,61 @@ export default async function MapComponent() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6 space-y-8">
-      {/* Current User Section */}
-      {currentUserResult.success && currentUserResult.data && (
-        <div className="flex justify-center">
-          <div className="w-full max-w-md">
-            <UserLocationCard user={currentUserResult.data} />
-          </div>
-        </div>
-      )}
-
-      {friendsWithActivities.length > 0 && (
-        <div className="space-y-6">
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {friendsWithActivities.map((friend) => (
-              <FriendLocationCard key={friend.profile_id} friend={friend} />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {friendsWithoutActivities.length > 0 && (
-        <div className="space-y-6">
-          <div className="flex items-center gap-3">
-            <div className="w-2 h-8 bg-gradient-to-b from-slate-500 to-slate-600 rounded-full shadow-lg opacity-60" />
-            <h3 className="text-xl font-bold text-slate-400">
-              No Recent Activity
-              <span className="ml-2 text-sm font-medium px-3 py-1 rounded-full bg-slate-500/20 text-slate-500 border border-slate-500/30">
-                {friendsWithoutActivities.length}
-              </span>
-            </h3>
-          </div>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {friendsWithoutActivities.map((friend) => (
-              <NoActivityCard key={friend.profile_id} friend={friend} />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {sortedFriends.length === 0 && (
-        <div className="text-center py-20">
-          <div className="relative">
-            <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-r from-slate-700 to-slate-800 flex items-center justify-center text-4xl opacity-60">
-              👥
-            </div>
-            <div className="text-slate-400 space-y-2">
-              <p className="text-2xl font-semibold">No friends to show</p>
-              <p className="text-lg">
-                Add some friends to see their locations on the map!
-              </p>
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto py-8 px-4 space-y-8">
+        {/* Current User Section */}
+        {currentUserResult.success && currentUserResult.data && (
+          <div className="flex justify-center">
+            <div className="w-full max-w-md">
+              <UserLocationCard user={currentUserResult.data} />
             </div>
           </div>
-        </div>
-      )}
+        )}
+
+        {friendsWithActivities.length > 0 && (
+          <div className="space-y-6">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {friendsWithActivities.map((friend) => (
+                <FriendLocationCard key={friend.profile_id} friend={friend} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {friendsWithoutActivities.length > 0 && (
+          <div className="space-y-6">
+            <div className="flex items-center gap-3">
+              <h3 className="text-xl font-bold text-foreground">
+                No Recent Activity
+                <span className="ml-2 text-sm font-medium px-3 py-1 rounded-full bg-muted text-muted-foreground border">
+                  {friendsWithoutActivities.length}
+                </span>
+              </h3>
+            </div>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {friendsWithoutActivities.map((friend) => (
+                <NoActivityCard key={friend.profile_id} friend={friend} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {sortedFriends.length === 0 && (
+          <div className="text-center py-20">
+            <div className="relative">
+              <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-muted flex items-center justify-center text-4xl">
+                👥
+              </div>
+              <div className="text-muted-foreground space-y-2">
+                <p className="text-2xl font-semibold">No friends to show</p>
+                <p className="text-lg">
+                  Add some friends to see their locations on the map!
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

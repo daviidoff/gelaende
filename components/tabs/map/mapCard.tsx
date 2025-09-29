@@ -96,19 +96,21 @@ export function FriendLocationCard({
       {/* BeReal-style user header */}
       <div className="flex items-center gap-3">
         {/* Profile picture placeholder */}
-        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-semibold text-lg shadow-lg">
+        <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center text-foreground font-semibold text-lg border">
           {friend.name.charAt(0).toUpperCase()}
         </div>
 
         {/* Name and time */}
         <div className="flex-1">
           <div className="flex items-center gap-2">
-            <h3 className="font-semibold text-white text-base">
+            <h3 className="font-semibold text-foreground text-base">
               {friend.name}
             </h3>
-            <div className="w-2 h-2 rounded-full bg-green-400 shadow-sm shadow-green-400/50" />
+            <div className="w-2 h-2 rounded-full bg-green-500" />
           </div>
-          <p className="text-sm text-slate-400 leading-tight">{timeDisplay}</p>
+          <p className="text-sm text-muted-foreground leading-tight">
+            {timeDisplay}
+          </p>
         </div>
 
         {/* Ping Button */}
@@ -127,7 +129,7 @@ export function FriendLocationCard({
 
       {/* Activity picture (if available) */}
       {friend.lastPlace?.picture && (
-        <div className="rounded-lg overflow-hidden border border-slate-700/50">
+        <div className="rounded-lg overflow-hidden border">
           <Image
             src={friend.lastPlace.picture}
             alt="Activity picture"
@@ -139,12 +141,12 @@ export function FriendLocationCard({
       )}
 
       {/* Location card */}
-      <Card className="bg-slate-800/90 border-slate-700/50 hover:border-slate-600/70 transition-colors">
+      <Card className="bg-card border hover:bg-accent/5 transition-colors">
         <CardContent className="p-4">
           <div className="flex items-start gap-3">
-            <MapPin className="w-5 h-5 mt-0.5 text-blue-400 flex-shrink-0" />
+            <MapPin className="w-5 h-5 mt-0.5 text-primary flex-shrink-0" />
             <div className="flex-1 min-w-0">
-              <h4 className="font-semibold text-white text-sm leading-tight">
+              <h4 className="font-semibold text-foreground text-sm leading-tight">
                 {placeName}
               </h4>
             </div>
@@ -162,30 +164,32 @@ export function NoActivityCard({ friend }: { friend: FriendWithLastPlace }) {
       {/* BeReal-style user header */}
       <div className="flex items-center gap-3">
         {/* Profile picture placeholder */}
-        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-slate-500 to-slate-600 flex items-center justify-center text-slate-300 font-semibold text-lg">
+        <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center text-muted-foreground font-semibold text-lg border">
           {friend.name.charAt(0).toUpperCase()}
         </div>
 
         {/* Name and time */}
         <div className="flex-1">
           <div className="flex items-center gap-2">
-            <h3 className="font-semibold text-slate-300 text-base">
+            <h3 className="font-semibold text-muted-foreground text-base">
               {friend.name}
             </h3>
-            <div className="w-2 h-2 rounded-full bg-slate-500" />
+            <div className="w-2 h-2 rounded-full bg-muted-foreground" />
           </div>
-          <p className="text-sm text-slate-500 leading-tight">
+          <p className="text-sm text-muted-foreground leading-tight">
             No recent activity
           </p>
         </div>
       </div>
 
       {/* Location card */}
-      <Card className="bg-slate-800/50 border-slate-700/30">
+      <Card className="bg-muted/50 border-muted">
         <CardContent className="p-4">
           <div className="flex items-center gap-3">
-            <MapPin className="w-5 h-5 text-slate-500 flex-shrink-0" />
-            <span className="text-sm text-slate-500">Location not shared</span>
+            <MapPin className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+            <span className="text-sm text-muted-foreground">
+              Location not shared
+            </span>
           </div>
         </CardContent>
       </Card>
@@ -205,25 +209,29 @@ export function UserLocationCard({ user }: { user: FriendWithLastPlace }) {
       {/* BeReal-style user header */}
       <div className="flex items-center gap-3">
         {/* Profile picture placeholder with special styling for current user */}
-        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white font-semibold text-lg shadow-lg ring-2 ring-indigo-400/30">
+        <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-semibold text-lg border">
           {user.name.charAt(0).toUpperCase()}
         </div>
 
         {/* Name and time */}
         <div className="flex-1">
           <div className="flex items-center gap-2">
-            <h3 className="font-semibold text-white text-base">{user.name}</h3>
-            <span className="text-xs px-2 py-0.5 rounded-full bg-indigo-500/30 text-indigo-200 border border-indigo-400/30">
+            <h3 className="font-semibold text-foreground text-base">
+              {user.name}
+            </h3>
+            <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
               You
             </span>
           </div>
-          <p className="text-sm text-slate-400 leading-tight">{timeDisplay}</p>
+          <p className="text-sm text-muted-foreground leading-tight">
+            {timeDisplay}
+          </p>
         </div>
       </div>
 
       {/* Activity picture (if available) */}
       {user.lastPlace?.picture && (
-        <div className="rounded-lg overflow-hidden border border-slate-700/50">
+        <div className="rounded-lg overflow-hidden border">
           <Image
             src={user.lastPlace.picture}
             alt="Your activity picture"
@@ -235,12 +243,12 @@ export function UserLocationCard({ user }: { user: FriendWithLastPlace }) {
       )}
 
       {/* Location card with change place button */}
-      <Card className="bg-slate-800/90 border-slate-700/50 hover:border-slate-600/70 transition-colors">
+      <Card className="bg-card border hover:bg-accent/5 transition-colors">
         <CardContent className="p-4 space-y-3">
           <div className="flex items-start gap-3">
-            <MapPin className="w-5 h-5 mt-0.5 text-indigo-400 flex-shrink-0" />
+            <MapPin className="w-5 h-5 mt-0.5 text-primary flex-shrink-0" />
             <div className="flex-1 min-w-0">
-              <h4 className="font-semibold text-white text-sm leading-tight">
+              <h4 className="font-semibold text-foreground text-sm leading-tight">
                 {placeName}
               </h4>
             </div>
@@ -249,10 +257,7 @@ export function UserLocationCard({ user }: { user: FriendWithLastPlace }) {
           {/* Action Buttons */}
           <div className="space-y-2">
             <Link href="/map/addActivity" className="block">
-              <Button
-                className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white border-0 shadow-md hover:shadow-lg transition-all duration-200"
-                size="sm"
-              >
+              <Button className="w-full" size="sm">
                 <MapPin className="w-4 h-4 mr-2" />
                 Change Place
               </Button>
@@ -260,11 +265,7 @@ export function UserLocationCard({ user }: { user: FriendWithLastPlace }) {
 
             {user.lastPlace && (
               <Link href="/map/addPicture" className="block">
-                <Button
-                  className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white border-0 shadow-md hover:shadow-lg transition-all duration-200"
-                  size="sm"
-                  variant="outline"
-                >
+                <Button className="w-full" size="sm" variant="outline">
                   <Camera className="w-4 h-4 mr-2" />
                   {user.lastPlace.picture ? "Update Picture" : "Add Picture"}
                 </Button>

@@ -131,6 +131,105 @@ export interface Database {
           updated_at?: string;
         };
       };
+      events: {
+        Row: {
+          id: string;
+          title: string;
+          description: string | null;
+          date: string;
+          start_time: string | null;
+          end_time: string | null;
+          place: string;
+          location_details: string | null;
+          max_attendees: number | null;
+          status: "draft" | "published" | "cancelled" | "completed";
+          category: string | null;
+          is_public: boolean;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          title: string;
+          description?: string | null;
+          date: string;
+          start_time?: string | null;
+          end_time?: string | null;
+          place: string;
+          location_details?: string | null;
+          max_attendees?: number | null;
+          status?: "draft" | "published" | "cancelled" | "completed";
+          category?: string | null;
+          is_public?: boolean;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          title?: string;
+          description?: string | null;
+          date?: string;
+          start_time?: string | null;
+          end_time?: string | null;
+          place?: string;
+          location_details?: string | null;
+          max_attendees?: number | null;
+          status?: "draft" | "published" | "cancelled" | "completed";
+          category?: string | null;
+          is_public?: boolean;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      event_attendees: {
+        Row: {
+          id: string;
+          event_id: string;
+          user_id: string;
+          status: "pending" | "confirmed" | "declined";
+          joined_at: string;
+        };
+        Insert: {
+          id?: string;
+          event_id: string;
+          user_id: string;
+          status?: "pending" | "confirmed" | "declined";
+          joined_at?: string;
+        };
+        Update: {
+          id?: string;
+          event_id?: string;
+          user_id?: string;
+          status?: "pending" | "confirmed" | "declined";
+          joined_at?: string;
+        };
+      };
+      event_organizers: {
+        Row: {
+          id: string;
+          event_id: string;
+          user_id: string;
+          role: "organizer" | "co-organizer" | "admin";
+          added_at: string;
+        };
+        Insert: {
+          id?: string;
+          event_id: string;
+          user_id: string;
+          role?: "organizer" | "co-organizer" | "admin";
+          added_at?: string;
+        };
+        Update: {
+          id?: string;
+          event_id?: string;
+          user_id?: string;
+          role?: "organizer" | "co-organizer" | "admin";
+          added_at?: string;
+        };
+      };
     };
     Views: {
       [_ in never]: never;
@@ -184,6 +283,24 @@ export type FriendshipInviteInsert =
 export type FriendshipInviteUpdate =
   Database["public"]["Tables"]["friendship_invites"]["Update"];
 
+export type Event = Database["public"]["Tables"]["events"]["Row"];
+export type EventInsert = Database["public"]["Tables"]["events"]["Insert"];
+export type EventUpdate = Database["public"]["Tables"]["events"]["Update"];
+
+export type EventAttendee =
+  Database["public"]["Tables"]["event_attendees"]["Row"];
+export type EventAttendeeInsert =
+  Database["public"]["Tables"]["event_attendees"]["Insert"];
+export type EventAttendeeUpdate =
+  Database["public"]["Tables"]["event_attendees"]["Update"];
+
+export type EventOrganizer =
+  Database["public"]["Tables"]["event_organizers"]["Row"];
+export type EventOrganizerInsert =
+  Database["public"]["Tables"]["event_organizers"]["Insert"];
+export type EventOrganizerUpdate =
+  Database["public"]["Tables"]["event_organizers"]["Update"];
+
 // Extended types with relationships
 export type ProfileWithUser = Profile & {
   user?: {
@@ -207,6 +324,26 @@ export type FriendshipInviteWithProfiles = FriendshipInvite & {
   requestee_profile?: Profile;
 };
 
+// Extended event types with relationships
+export type EventWithDetails = Event & {
+  creator_profile?: Profile;
+  attendees?: (EventAttendee & { profile?: Profile })[];
+  organizers?: (EventOrganizer & { profile?: Profile })[];
+  attendee_count?: number;
+  is_attending?: boolean;
+  is_organizing?: boolean;
+};
+
+export type EventAttendeeWithProfile = EventAttendee & {
+  profile?: Profile;
+  event?: Event;
+};
+
+export type EventOrganizerWithProfile = EventOrganizer & {
+  profile?: Profile;
+  event?: Event;
+};
+
 // Location types for the places table
 export interface LocationCoordinates {
   lat: number;
@@ -223,3 +360,43 @@ export interface LocationAddress {
 }
 
 export type LocationData = LocationCoordinates | LocationAddress;
+
+// Event-related enums and utility types
+export type EventStatus = "draft" | "published" | "cancelled" | "completed";
+export type AttendeeStatus = "pending" | "confirmed" | "declined";
+export type OrganizerRole = "organizer" | "co-organizer" | "admin";
+
+// Event creation form types
+export interface EventFormData {
+  title: string;
+  description?: string;
+  date: string;
+  start_time?: string;
+  end_time?: string;
+  place: string;
+  location_details?: string;
+  max_attendees?: number;
+  category?: string;
+  is_public?: boolean;
+}
+
+// Event filters and search types
+export interface EventFilters {
+  status?: EventStatus[];
+  category?: string[];
+  date_from?: string;
+  date_to?: string;
+  is_public?: boolean;
+  created_by?: string;
+  attending?: boolean;
+  organizing?: boolean;
+}
+
+// Event statistics types
+export interface EventStats {
+  total_attendees: number;
+  confirmed_attendees: number;
+  pending_attendees: number;
+  declined_attendees: number;
+  total_organizers: number;
+}

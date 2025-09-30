@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { createEvent, joinEvent, leaveEvent } from "../actions";
+import { attendEvent, createEvent, joinEvent, leaveEvent } from "../actions";
 
 // Mock modules
 jest.mock("@/lib/supabase/server");
@@ -559,6 +559,542 @@ describe("Events Actions Functions", () => {
 
       expect(result.success).toBe(false);
       expect(result.message).toBe("This event is at full capacity");
+    });
+  });
+
+  describe("attendEvent", () => {
+    const mockEvent = {
+      id: mockEventId,
+      title: "Test Event",
+      max_attendees: 10,
+      status: "published",
+    };
+
+    it("should mark attendance for an event successfully", async () => {
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: mockUser },
+        error: null,
+      });
+
+      // Mock event lookup
+      const eventQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: mockEvent,
+          error: null,
+        }),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(eventQuery);
+
+      // Mock attendance check (no existing attendance)
+      const attendanceCheckQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn(() => ({
+          eq: jest.fn(() => ({
+            single: jest.fn().mockResolvedValue({
+              data: null,
+              error: { code: "PGRST116" }, // No rows returned
+            }),
+          })),
+        })),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(attendanceCheckQuery);
+
+      // Mock capacity check
+      const capacityQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn(() => ({
+          eq: jest.fn().mockResolvedValue({
+            data: [{ id: "att1" }, { id: "att2" }], // 2 existing attendees
+            error: null,
+          }),
+        })),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(capacityQuery);
+
+      // Mock attendance insertion
+      const attendQuery = {
+        insert: jest.fn().mockResolvedValue({
+          data: null,
+          error: null,
+        }),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(attendQuery);
+
+      const result = await attendEvent(mockEventId);
+
+      expect(result.success).toBe(true);
+      expect(result.message).toBe(
+        'Successfully marked attendance for "Test Event"!'
+      );
+
+      expect(attendQuery.insert).toHaveBeenCalledWith({
+        event_id: mockEventId,
+        user_id: mockUserId,
+        status: "confirmed",
+      });
+    });
+
+    it("should handle authentication error", async () => {
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: null },
+        error: { message: "Not authenticated" },
+      });
+
+      const result = await attendEvent(mockEventId);
+
+      expect(result.success).toBe(false);
+      expect(result.message).toBe("Authentication required");
+    });
+
+    it("should handle event not found", async () => {
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: mockUser },
+        error: null,
+      });
+
+      const eventQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: null,
+          error: { message: "Event not found" },
+        }),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(eventQuery);
+
+      const result = await attendEvent(mockEventId);
+
+      expect(result.success).toBe(false);
+      expect(result.message).toBe("Event not found");
+    });
+
+    it("should allow attending draft events (unlike joinEvent)", async () => {
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: mockUser },
+        error: null,
+      });
+
+      const draftEvent = { ...mockEvent, status: "draft" };
+      const eventQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: draftEvent,
+          error: null,
+        }),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(eventQuery);
+
+      const attendanceCheckQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn(() => ({
+          eq: jest.fn(() => ({
+            single: jest.fn().mockResolvedValue({
+              data: null,
+              error: { code: "PGRST116" },
+            }),
+          })),
+        })),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(attendanceCheckQuery);
+
+      const attendQuery = {
+        insert: jest.fn().mockResolvedValue({
+          data: null,
+          error: null,
+        }),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(attendQuery);
+
+      const result = await attendEvent(mockEventId);
+
+      expect(result.success).toBe(true);
+      expect(result.message).toBe(
+        'Successfully marked attendance for "Test Event"!'
+      );
+    });
+
+    it("should allow attending completed events", async () => {
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: mockUser },
+        error: null,
+      });
+
+      const completedEvent = { ...mockEvent, status: "completed" };
+      const eventQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: completedEvent,
+          error: null,
+        }),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(eventQuery);
+
+      const attendanceCheckQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn(() => ({
+          eq: jest.fn(() => ({
+            single: jest.fn().mockResolvedValue({
+              data: null,
+              error: { code: "PGRST116" },
+            }),
+          })),
+        })),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(attendanceCheckQuery);
+
+      const attendQuery = {
+        insert: jest.fn().mockResolvedValue({
+          data: null,
+          error: null,
+        }),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(attendQuery);
+
+      const result = await attendEvent(mockEventId);
+
+      expect(result.success).toBe(true);
+      expect(result.message).toBe(
+        'Successfully marked attendance for "Test Event"!'
+      );
+    });
+
+    it("should handle already confirmed attendance", async () => {
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: mockUser },
+        error: null,
+      });
+
+      const eventQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: mockEvent,
+          error: null,
+        }),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(eventQuery);
+
+      const attendanceCheckQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn(() => ({
+          eq: jest.fn(() => ({
+            single: jest.fn().mockResolvedValue({
+              data: { id: "att1", status: "confirmed" },
+              error: null,
+            }),
+          })),
+        })),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(attendanceCheckQuery);
+
+      const result = await attendEvent(mockEventId);
+
+      expect(result.success).toBe(false);
+      expect(result.message).toBe(
+        "You are already marked as attending this event"
+      );
+    });
+
+    it("should confirm pending attendance", async () => {
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: mockUser },
+        error: null,
+      });
+
+      const eventQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: mockEvent,
+          error: null,
+        }),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(eventQuery);
+
+      const attendanceCheckQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn(() => ({
+          eq: jest.fn(() => ({
+            single: jest.fn().mockResolvedValue({
+              data: { id: "att1", status: "pending" },
+              error: null,
+            }),
+          })),
+        })),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(attendanceCheckQuery);
+
+      const updateQuery = {
+        update: jest.fn().mockReturnThis(),
+        eq: jest.fn(() => ({
+          eq: jest.fn().mockResolvedValue({
+            data: null,
+            error: null,
+          }),
+        })),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(updateQuery);
+
+      const result = await attendEvent(mockEventId);
+
+      expect(result.success).toBe(true);
+      expect(result.message).toBe('Attendance confirmed for "Test Event"!');
+
+      expect(updateQuery.update).toHaveBeenCalledWith({ status: "confirmed" });
+    });
+
+    it("should handle event at capacity for published events", async () => {
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: mockUser },
+        error: null,
+      });
+
+      const eventQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: { ...mockEvent, max_attendees: 2 },
+          error: null,
+        }),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(eventQuery);
+
+      const attendanceCheckQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn(() => ({
+          eq: jest.fn(() => ({
+            single: jest.fn().mockResolvedValue({
+              data: null,
+              error: { code: "PGRST116" },
+            }),
+          })),
+        })),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(attendanceCheckQuery);
+
+      const capacityQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn(() => ({
+          eq: jest.fn().mockResolvedValue({
+            data: [{ id: "att1" }, { id: "att2" }], // 2 attendees, capacity is 2
+            error: null,
+          }),
+        })),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(capacityQuery);
+
+      const result = await attendEvent(mockEventId);
+
+      expect(result.success).toBe(false);
+      expect(result.message).toBe("This event is at full capacity");
+    });
+
+    it("should ignore capacity check for non-published events", async () => {
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: mockUser },
+        error: null,
+      });
+
+      const draftEvent = { ...mockEvent, status: "draft", max_attendees: 1 };
+      const eventQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: draftEvent,
+          error: null,
+        }),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(eventQuery);
+
+      const attendanceCheckQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn(() => ({
+          eq: jest.fn(() => ({
+            single: jest.fn().mockResolvedValue({
+              data: null,
+              error: { code: "PGRST116" },
+            }),
+          })),
+        })),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(attendanceCheckQuery);
+
+      const attendQuery = {
+        insert: jest.fn().mockResolvedValue({
+          data: null,
+          error: null,
+        }),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(attendQuery);
+
+      const result = await attendEvent(mockEventId);
+
+      expect(result.success).toBe(true);
+      expect(result.message).toBe(
+        'Successfully marked attendance for "Test Event"!'
+      );
+    });
+
+    it("should ignore capacity check when max_attendees is null", async () => {
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: mockUser },
+        error: null,
+      });
+
+      const eventQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: { ...mockEvent, max_attendees: null },
+          error: null,
+        }),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(eventQuery);
+
+      const attendanceCheckQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn(() => ({
+          eq: jest.fn(() => ({
+            single: jest.fn().mockResolvedValue({
+              data: null,
+              error: { code: "PGRST116" },
+            }),
+          })),
+        })),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(attendanceCheckQuery);
+
+      const attendQuery = {
+        insert: jest.fn().mockResolvedValue({
+          data: null,
+          error: null,
+        }),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(attendQuery);
+
+      const result = await attendEvent(mockEventId);
+
+      expect(result.success).toBe(true);
+      expect(result.message).toBe(
+        'Successfully marked attendance for "Test Event"!'
+      );
+    });
+
+    it("should handle attendance insertion error", async () => {
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: mockUser },
+        error: null,
+      });
+
+      const eventQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: mockEvent,
+          error: null,
+        }),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(eventQuery);
+
+      const attendanceCheckQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn(() => ({
+          eq: jest.fn(() => ({
+            single: jest.fn().mockResolvedValue({
+              data: null,
+              error: { code: "PGRST116" },
+            }),
+          })),
+        })),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(attendanceCheckQuery);
+
+      const capacityQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn(() => ({
+          eq: jest.fn().mockResolvedValue({
+            data: [{ id: "att1" }], // 1 attendee
+            error: null,
+          }),
+        })),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(capacityQuery);
+
+      const attendQuery = {
+        insert: jest.fn().mockResolvedValue({
+          data: null,
+          error: { message: "Database error" },
+        }),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(attendQuery);
+
+      const result = await attendEvent(mockEventId);
+
+      expect(result.success).toBe(false);
+      expect(result.message).toBe("Failed to mark attendance: Database error");
+    });
+
+    it("should handle update error for pending attendance", async () => {
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: mockUser },
+        error: null,
+      });
+
+      const eventQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: mockEvent,
+          error: null,
+        }),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(eventQuery);
+
+      const attendanceCheckQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn(() => ({
+          eq: jest.fn(() => ({
+            single: jest.fn().mockResolvedValue({
+              data: { id: "att1", status: "pending" },
+              error: null,
+            }),
+          })),
+        })),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(attendanceCheckQuery);
+
+      const updateQuery = {
+        update: jest.fn().mockReturnThis(),
+        eq: jest.fn(() => ({
+          eq: jest.fn().mockResolvedValue({
+            data: null,
+            error: { message: "Update failed" },
+          }),
+        })),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(updateQuery);
+
+      const result = await attendEvent(mockEventId);
+
+      expect(result.success).toBe(false);
+      expect(result.message).toBe("Failed to update attendance: Update failed");
+    });
+
+    it("should handle unexpected errors", async () => {
+      mockSupabaseClient.auth.getUser.mockRejectedValue(
+        new Error("Network error")
+      );
+
+      const result = await attendEvent(mockEventId);
+
+      expect(result.success).toBe(false);
+      expect(result.message).toBe(
+        "An unexpected error occurred while marking attendance"
+      );
     });
   });
 

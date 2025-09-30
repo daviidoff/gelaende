@@ -269,6 +269,154 @@ export async function joinEvent(eventId: string): Promise<JoinEventResult> {
   }
 }
 
+export interface AttendEventResult {
+  success: boolean;
+  message: string;
+}
+
+/**
+ * Server action to mark attendance for an event
+ * Similar to joinEvent but with slightly different semantics -
+ * this is for marking that you will attend or have attended an event
+ * @param eventId - The ID of the event to attend
+ * @returns Promise with success status and message
+ */
+export async function attendEvent(eventId: string): Promise<AttendEventResult> {
+  try {
+    const supabase = await createClient();
+
+    // Get the current user
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return {
+        success: false,
+        message: "Authentication required",
+      };
+    }
+
+    const userId = user.id;
+
+    // Check if event exists
+    const { data: event, error: eventError } = await supabase
+      .from("events")
+      .select("id, title, max_attendees, status")
+      .eq("id", eventId)
+      .single();
+
+    if (eventError || !event) {
+      return {
+        success: false,
+        message: "Event not found",
+      };
+    }
+
+    // Allow attending any event regardless of status (unlike joinEvent)
+    // This allows marking attendance for completed events or drafts
+
+    // Check if user is already attending
+    const { data: existingAttendance, error: checkError } = await supabase
+      .from("event_attendees")
+      .select("id, status")
+      .eq("event_id", eventId)
+      .eq("user_id", userId)
+      .single();
+
+    if (checkError && checkError.code !== "PGRST116") {
+      // PGRST116 = no rows returned
+      console.error("Error checking attendance:", checkError);
+      return {
+        success: false,
+        message: "Failed to check attendance status",
+      };
+    }
+
+    if (existingAttendance) {
+      if (existingAttendance.status === "confirmed") {
+        return {
+          success: false,
+          message: "You are already marked as attending this event",
+        };
+      } else if (existingAttendance.status === "pending") {
+        // Update existing pending status to confirmed
+        const { error: updateError } = await supabase
+          .from("event_attendees")
+          .update({ status: "confirmed" })
+          .eq("event_id", eventId)
+          .eq("user_id", userId);
+
+        if (updateError) {
+          console.error("Error updating attendance:", updateError);
+          return {
+            success: false,
+            message: `Failed to update attendance: ${updateError.message}`,
+          };
+        }
+
+        return {
+          success: true,
+          message: `Attendance confirmed for "${event.title}"!`,
+        };
+      }
+    }
+
+    // Check capacity only for published events and only if max_attendees is set
+    if (event.status === "published" && event.max_attendees) {
+      const { data: attendeeCount, error: countError } = await supabase
+        .from("event_attendees")
+        .select("id")
+        .eq("event_id", eventId)
+        .eq("status", "confirmed");
+
+      if (countError) {
+        console.error("Error counting attendees:", countError);
+        return {
+          success: false,
+          message: "Failed to check event capacity",
+        };
+      }
+
+      if (attendeeCount && attendeeCount.length >= event.max_attendees) {
+        return {
+          success: false,
+          message: "This event is at full capacity",
+        };
+      }
+    }
+
+    // Mark attendance as confirmed
+    const { error: attendError } = await supabase
+      .from("event_attendees")
+      .insert({
+        event_id: eventId,
+        user_id: userId,
+        status: "confirmed",
+      });
+
+    if (attendError) {
+      console.error("Error marking attendance:", attendError);
+      return {
+        success: false,
+        message: `Failed to mark attendance: ${attendError.message}`,
+      };
+    }
+
+    return {
+      success: true,
+      message: `Successfully marked attendance for "${event.title}"!`,
+    };
+  } catch (error) {
+    console.error("Error in attendEvent:", error);
+    return {
+      success: false,
+      message: "An unexpected error occurred while marking attendance",
+    };
+  }
+}
+
 /**
  * Server action to leave an event
  * @param eventId - The ID of the event to leave

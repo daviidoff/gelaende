@@ -60,13 +60,6 @@ describe("Events Actions Functions", () => {
     is_public: true,
   };
 
-  const mockCreatedEvent = {
-    id: mockEventId,
-    ...mockEventData,
-    created_by: mockUserId,
-    status: "published",
-  };
-
   describe("createEvent", () => {
     it("should create an event successfully", async () => {
       // Mock auth response

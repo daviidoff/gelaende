@@ -577,7 +577,7 @@ export class TestHelpers {
     TestHelpers.mockAuthUser(mockClient, user);
 
     // Create a queue of mock queries to be returned in order
-    const mockQueries: any[] = [];
+    const mockQueries: Record<string, jest.Mock>[] = [];
 
     // Mock friendships query if provided
     if (friendships.length > 0 || config.friendships !== undefined) {
@@ -674,7 +674,7 @@ export class TestHelpers {
     // Mock authentication
     TestHelpers.mockAuthUser(mockClient, user);
 
-    const mockQueries: any[] = [];
+    const mockQueries: Record<string, jest.Mock>[] = [];
 
     // Mock attending events query
     const attendingQuery = {
@@ -807,7 +807,7 @@ export class TestHelpers {
     mockClient: MockSupabaseClient,
     config: {
       event: ReturnType<typeof TestDataFactory.createEvent>;
-      existingAttendance?: any;
+      existingAttendance?: TestEventAttendee | null;
       attendeeCount?: number;
       shouldSucceed?: boolean;
     }
@@ -819,7 +819,7 @@ export class TestHelpers {
       shouldSucceed = true,
     } = config;
 
-    const mockQueries: any[] = [];
+    const mockQueries: Record<string, jest.Mock>[] = [];
 
     // Event lookup query
     const eventQuery = {
@@ -852,15 +852,13 @@ export class TestHelpers {
     const capacityQuery = {
       select: jest.fn().mockReturnThis(),
       eq: jest.fn().mockReturnValue({
-        eq: jest
-          .fn()
-          .mockResolvedValue(
-            MockSupabaseFactory.successListResponse(
-              Array.from({ length: attendeeCount }, (_, i) => ({
-                id: `att-${i}`,
-              }))
-            )
-          ),
+        eq: jest.fn().mockResolvedValue(
+          MockSupabaseFactory.successListResponse(
+            Array.from({ length: attendeeCount }, (_, i) => ({
+              id: `att-${i}`,
+            }))
+          )
+        ),
       }),
     };
     mockQueries.push(capacityQuery);

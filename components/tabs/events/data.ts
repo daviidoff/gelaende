@@ -88,13 +88,15 @@ export async function getUpcomingFriendsEvents(): Promise<GetUpcomingFriendsEven
     const eventsWithDetails = await Promise.all(
       (events || []).map(async (event) => {
         // Get attendee count and check if current user is attending
-        const { data: attendees, error: attendeesError } = await supabase
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { data: attendees, error: _attendeesError } = await supabase
           .from("event_attendees")
           .select("user_id, status")
           .eq("event_id", event.id);
 
         // Get organizers and check if current user is organizing
-        const { data: organizers, error: organizersError } = await supabase
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { data: organizers, error: _organizersError } = await supabase
           .from("event_organizers")
           .select("user_id, role")
           .eq("event_id", event.id);
@@ -181,13 +183,15 @@ export async function getUpcomingEvents(): Promise<GetUpcomingFriendsEventsResul
     const eventsWithDetails = await Promise.all(
       (events || []).map(async (event) => {
         // Get attendee count and check if current user is attending
-        const { data: attendees, error: attendeesError } = await supabase
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { data: attendees, error: _attendeesError } = await supabase
           .from("event_attendees")
           .select("user_id, status")
           .eq("event_id", event.id);
 
         // Get organizers and check if current user is organizing
-        const { data: organizers, error: organizersError } = await supabase
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { data: organizers, error: _organizersError } = await supabase
           .from("event_organizers")
           .select("user_id, role")
           .eq("event_id", event.id);
@@ -302,6 +306,8 @@ export async function getMyEvents(): Promise<GetUpcomingFriendsEventsResult> {
 
     // Combine and deduplicate events
     const allEventIds = new Set();
+    // Using any[] due to complex nested query structure from Supabase relations
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const combinedEvents: any[] = [];
 
     // Add attending events

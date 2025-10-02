@@ -6,6 +6,7 @@ import {
   TestDataFactory,
   TestHelpers,
 } from "@/lib/test-factories";
+import { EventStatus, EventWithDetails } from "@/lib/types/database";
 import {
   getMyEvents,
   getUpcomingEvents,
@@ -498,7 +499,10 @@ describe("Events Data Functions", () => {
       expect(result.data![0].is_attending).toBe(true);
       expect(result.data![0].is_organizing).toBe(true);
       // organizer_role is added dynamically in the function
-      expect((result.data![0] as any).organizer_role).toBe("co-organizer");
+      expect(
+        (result.data![0] as EventWithDetails & { organizer_role: string })
+          .organizer_role
+      ).toBe("co-organizer");
     });
 
     it("should handle attending events query error", async () => {
@@ -934,7 +938,7 @@ describe("Events Data Functions", () => {
             title: `Organized Event ${i + 1}`,
             status: ["draft", "published", "published", "cancelled"][
               i % 4
-            ] as any,
+            ] as EventStatus,
             category: ["study", "social", "workshop", "networking", "sports"][
               i % 5
             ],

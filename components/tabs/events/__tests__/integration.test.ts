@@ -562,7 +562,7 @@ describe("Events Integration Tests", () => {
     it("should handle bulk event operations with friends network", async () => {
       // Create a scenario with multiple users and their friendships
       const scenario = createTestScenario(5, 3, 10); // 5 users, 3 places, 10 activities
-      const [user1, user2, user3, user4, user5] = scenario.users;
+      const [user1] = scenario.users;
 
       // User1 creates multiple events
       const authUser1 = TestDataFactory.createAuthUser();

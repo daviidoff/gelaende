@@ -41,6 +41,46 @@ export interface TestFriendshipInvite {
   status: "pending" | "accepted" | "rejected";
 }
 
+export interface TestEvent {
+  id: string;
+  title: string;
+  description?: string;
+  date: string;
+  start_time?: string;
+  end_time?: string;
+  place: string;
+  location_details?: string;
+  max_attendees?: number;
+  category: string;
+  is_public: boolean;
+  status: "draft" | "published" | "cancelled" | "completed";
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TestEventAttendee {
+  event_id: string;
+  user_id: string;
+  status: "pending" | "confirmed" | "declined";
+  joined_at: string;
+}
+
+export interface TestEventOrganizer {
+  event_id: string;
+  user_id: string;
+  role: "organizer" | "co-organizer" | "admin";
+  assigned_at: string;
+}
+
+export interface TestEventWithDetails extends TestEvent {
+  creator_profile?: TestUser;
+  attendees?: TestEventAttendee[];
+  organizers?: TestEventOrganizer[];
+  attendee_count?: number;
+  confirmed_count?: number;
+}
+
 // Sample data pools
 const FIRST_NAMES = [
   "Max",
@@ -167,6 +207,55 @@ const CITIES = [
   "Bielefeld",
 ];
 
+const EVENT_TITLES = [
+  "Lernsession Mathe",
+  "Coding Bootcamp",
+  "Kaffee & Code",
+  "Studiengruppe BWL",
+  "Hackathon Wochenende",
+  "Projektpräsentation",
+  "Networking Event",
+  "Tech Talk",
+  "Workshop JavaScript",
+  "Study Break Party",
+  "Examen Vorbereitung",
+  "Algorithmen Workshop",
+  "Startup Pitch Night",
+  "Open Source Meetup",
+  "Design Thinking Session",
+  "Career Fair",
+  "Uni Sport Event",
+  "Biergarten Meetup",
+  "Cultural Exchange",
+  "Research Presentation",
+];
+
+const EVENT_CATEGORIES = [
+  "study",
+  "social",
+  "workshop",
+  "networking",
+  "sports",
+  "cultural",
+  "career",
+  "tech",
+  "academic",
+  "entertainment",
+];
+
+const EVENT_DESCRIPTIONS = [
+  "Ein entspanntes Treffen zum gemeinsamen Lernen und Austausch von Ideen.",
+  "Praktischer Workshop mit Hands-on Übungen und Diskussionen.",
+  "Networking Event für Studierende verschiedener Fachrichtungen.",
+  "Intensive Lernsession zur Vorbereitung auf kommende Prüfungen.",
+  "Informelle Runde zum Kennenlernen und Erfahrungsaustausch.",
+  "Präsentation aktueller Projekte und Forschungsergebnisse.",
+  "Praktische Übungen und Gruppenarbeit zu relevanten Themen.",
+  "Offene Diskussion und Brainstorming Session.",
+  "Entspannte Atmosphäre zum Lernen und Socializing.",
+  "Professionelle Weiterbildung mit Zertifikat.",
+];
+
 // Utility functions
 function randomChoice<T>(array: T[]): T {
   return array[Math.floor(Math.random() * array.length)];
@@ -188,6 +277,31 @@ function randomEmail(name: string): string {
   const domains = ["gmail.com", "yahoo.com", "outlook.com", "web.de", "gmx.de"];
   const sanitized = name.toLowerCase().replace(/\s+/g, ".");
   return `${sanitized}@${randomChoice(domains)}`;
+}
+
+function randomFutureDate(daysAhead: number): string {
+  const today = new Date();
+  const futureDate = new Date(today);
+  futureDate.setDate(
+    today.getDate() + Math.floor(Math.random() * daysAhead) + 1
+  );
+  return futureDate.toISOString().split("T")[0];
+}
+
+function randomTime(afterTime?: string): string {
+  let startHour = 8; // Default start at 8 AM
+
+  if (afterTime) {
+    const [hour] = afterTime.split(":").map(Number);
+    startHour = Math.max(hour + 1, 8); // At least 1 hour later, but not before 8 AM
+  }
+
+  const hour = startHour + Math.floor(Math.random() * (20 - startHour)); // Up to 8 PM
+  const minute = Math.floor(Math.random() * 4) * 15; // 0, 15, 30, or 45 minutes
+
+  return `${hour.toString().padStart(2, "0")}:${minute
+    .toString()
+    .padStart(2, "0")}`;
 }
 
 function randomCoordinates(): { lat: number; lng: number } {
@@ -290,6 +404,97 @@ export function createTestFriendshipInvite(
   };
 }
 
+export function createTestEvent(
+  creatorId: string,
+  overrides: Partial<TestEvent> = {}
+): TestEvent {
+  const futureDate = randomFutureDate(30); // Random date within next 30 days
+  const startTime = randomTime();
+  const endTime = randomTime(startTime);
+  const now = new Date().toISOString();
+
+  return {
+    id: randomUUID(),
+    title: randomChoice(EVENT_TITLES),
+    description: randomChoice(EVENT_DESCRIPTIONS),
+    date: futureDate,
+    start_time: startTime,
+    end_time: endTime,
+    place: randomChoice(PLACE_NAMES),
+    location_details: `Near ${randomChoice(PLACE_NAMES)}, ${randomChoice(
+      CITIES
+    )}`,
+    max_attendees: randomChoice([10, 20, 25, 30, 50, 100]),
+    category: randomChoice(EVENT_CATEGORIES),
+    is_public: Math.random() > 0.3, // 70% public events
+    status: randomChoice(["draft", "published", "published", "published"]), // 75% published
+    created_by: creatorId,
+    created_at: now,
+    updated_at: now,
+    ...overrides,
+  };
+}
+
+export function createTestEventAttendee(
+  eventId: string,
+  userId: string,
+  overrides: Partial<TestEventAttendee> = {}
+): TestEventAttendee {
+  return {
+    event_id: eventId,
+    user_id: userId,
+    status: randomChoice(["pending", "confirmed", "confirmed", "declined"]), // 50% confirmed, 25% pending, 25% declined
+    joined_at: new Date().toISOString(),
+    ...overrides,
+  };
+}
+
+export function createTestEventOrganizer(
+  eventId: string,
+  userId: string,
+  overrides: Partial<TestEventOrganizer> = {}
+): TestEventOrganizer {
+  return {
+    event_id: eventId,
+    user_id: userId,
+    role: randomChoice(["organizer", "co-organizer", "admin"]),
+    assigned_at: new Date().toISOString(),
+    ...overrides,
+  };
+}
+
+export function createTestEventWithDetails(
+  creatorId: string,
+  attendeeIds: string[] = [],
+  organizerIds: string[] = [],
+  overrides: Partial<TestEventWithDetails> = {}
+): TestEventWithDetails {
+  const event = createTestEvent(creatorId, overrides);
+
+  const attendees = attendeeIds.map((userId) =>
+    createTestEventAttendee(event.id, userId)
+  );
+
+  const organizers = [
+    createTestEventOrganizer(event.id, creatorId, { role: "organizer" }),
+    ...organizerIds.map((userId) => createTestEventOrganizer(event.id, userId)),
+  ];
+
+  const confirmedCount = attendees.filter(
+    (a) => a.status === "confirmed"
+  ).length;
+
+  return {
+    ...event,
+    creator_profile: createTestUser({ id: creatorId }),
+    attendees,
+    organizers,
+    attendee_count: attendees.length,
+    confirmed_count: confirmedCount,
+    ...overrides,
+  };
+}
+
 // Bulk creation functions
 export function createTestUsers(count: number): TestUser[] {
   return Array.from({ length: count }, () => createTestUser());
@@ -299,6 +504,23 @@ export function createTestPlaces(count: number): TestPlace[] {
   return Array.from({ length: count }, () => createTestPlace());
 }
 
+export function createTestEvents(
+  count: number,
+  creatorIds: string[]
+): TestEvent[] {
+  return Array.from({ length: count }, () => {
+    const creatorId = randomChoice(creatorIds);
+    return createTestEvent(creatorId);
+  });
+}
+
+export function createTestEventAttendees(
+  eventId: string,
+  userIds: string[]
+): TestEventAttendee[] {
+  return userIds.map((userId) => createTestEventAttendee(eventId, userId));
+}
+
 // Create a complete test scenario
 export interface TestScenario {
   users: TestUser[];
@@ -306,6 +528,9 @@ export interface TestScenario {
   activities: TestActivity[];
   friendships: TestFriendship[];
   friendshipInvites: TestFriendshipInvite[];
+  events: TestEvent[];
+  eventAttendees: TestEventAttendee[];
+  eventOrganizers: TestEventOrganizer[];
 }
 
 export function createTestScenario(
@@ -356,12 +581,65 @@ export function createTestScenario(
     }
   }
 
+  // Create events (2-4 per user)
+  const events: TestEvent[] = [];
+  const eventAttendees: TestEventAttendee[] = [];
+  const eventOrganizers: TestEventOrganizer[] = [];
+
+  users.forEach((user) => {
+    const eventCount = 2 + Math.floor(Math.random() * 3); // 2-4 events per user
+    for (let i = 0; i < eventCount; i++) {
+      const event = createTestEvent(user.id);
+      events.push(event);
+
+      // Add creator as organizer
+      eventOrganizers.push(
+        createTestEventOrganizer(event.id, user.id, { role: "organizer" })
+      );
+
+      // Add some random attendees (friends are more likely to attend)
+      const potentialAttendees = users.filter((u) => u.id !== user.id);
+      const attendeeCount = Math.floor(
+        Math.random() * Math.min(5, potentialAttendees.length)
+      );
+
+      const selectedAttendees = potentialAttendees
+        .sort(() => Math.random() - 0.5)
+        .slice(0, attendeeCount);
+
+      selectedAttendees.forEach((attendee) => {
+        // Check if they're friends (higher chance of attendance)
+        const areFriends = friendships.some(
+          (f) =>
+            (f.user1_id === user.id && f.user2_id === attendee.id) ||
+            (f.user1_id === attendee.id && f.user2_id === user.id)
+        );
+
+        const status = areFriends
+          ? randomChoice([
+              "confirmed",
+              "confirmed",
+              "confirmed",
+              "pending",
+            ] as const) // 75% confirmed for friends
+          : randomChoice(["confirmed", "pending", "declined"] as const); // 33% each for non-friends
+
+        eventAttendees.push(
+          createTestEventAttendee(event.id, attendee.id, { status })
+        );
+      });
+    }
+  });
+
   return {
     users,
     places,
     activities,
     friendships,
     friendshipInvites,
+    events,
+    eventAttendees,
+    eventOrganizers,
   };
 }
 

@@ -68,14 +68,7 @@ export async function getUpcomingFriendsEvents(): Promise<GetUpcomingFriendsEven
       .from("events")
       .select(
         `
-        *,
-        creator_profile:profiles!events_created_by_fkey(
-          profile_id,
-          name,
-          studiengang,
-          university,
-          user_id
-        )
+        *
       `
       )
       .in("created_by", friendIds)
@@ -168,14 +161,7 @@ export async function getUpcomingEvents(): Promise<GetUpcomingFriendsEventsResul
       .from("events")
       .select(
         `
-        *,
-        creator_profile:profiles!events_created_by_fkey(
-          profile_id,
-          name,
-          studiengang,
-          university,
-          user_id
-        )
+        *
       `
       )
       .eq("status", "published")

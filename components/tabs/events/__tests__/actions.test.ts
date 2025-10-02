@@ -1,4 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
+import {
+  MockSupabaseFactory,
+  TEST_USER_1,
+  TestDataFactory,
+  TestHelpers,
+} from "@/lib/test-factories";
 import { attendEvent, createEvent, joinEvent, leaveEvent } from "../actions";
 
 // Mock modules
@@ -1218,6 +1224,341 @@ describe("Events Actions Functions", () => {
       expect(result.message).toBe(
         "An unexpected error occurred while leaving the event"
       );
+    });
+  });
+
+  // Comprehensive mock data test scenarios
+  describe("Comprehensive Mock Data Tests", () => {
+    describe("createEvent with realistic scenarios", () => {
+      it("should create a study event with full details", async () => {
+        const creator = TestDataFactory.createAuthUser({
+          name: "Max Mustermann",
+          email: "max.mustermann@tum.de",
+        });
+
+        TestHelpers.mockAuthUser(mockSupabaseClient, creator);
+        TestHelpers.mockEventCreation(mockSupabaseClient, "study-event-123");
+        TestHelpers.mockOrganizerInsertion(mockSupabaseClient);
+
+        const studyEventData = {
+          title: "Advanced Algorithms Study Group",
+          description:
+            "Weekly study session for the Advanced Algorithms course. We'll cover dynamic programming, graph algorithms, and complexity analysis.",
+          date: "2025-12-15",
+          start_time: "14:00",
+          end_time: "17:00",
+          place: "TU München Library - Room 3.14",
+          location_details:
+            "Third floor, Computer Science section. Look for the 'Algorithms Study' sign.",
+          max_attendees: 15,
+          category: "study",
+          is_public: true,
+        };
+
+        const result = await createEvent(studyEventData);
+
+        expect(result.success).toBe(true);
+        expect(result.message).toBe("Event created successfully!");
+        expect(result.eventId).toBe("study-event-123");
+      });
+
+      it("should create a networking event with location constraints", async () => {
+        const creator = TestDataFactory.createAuthUser({
+          name: "Dr. Sarah Tech",
+          email: "sarah.tech@lmu.de",
+        });
+
+        TestHelpers.mockAuthUser(mockSupabaseClient, creator);
+        TestHelpers.mockEventCreation(mockSupabaseClient, "networking-456");
+        TestHelpers.mockOrganizerInsertion(mockSupabaseClient);
+
+        const networkingEventData = {
+          title: "Munich Tech Professionals Meetup",
+          description:
+            "Monthly networking event for tech professionals in Munich. Great opportunity to meet like-minded people and discuss current trends.",
+          date: "2025-11-20",
+          start_time: "18:30",
+          end_time: "21:00",
+          place: "WeWork Maxvorstadt",
+          location_details:
+            "5th floor event space. Registration required at reception.",
+          max_attendees: 50,
+          category: "networking",
+          is_public: true,
+        };
+
+        const result = await createEvent(networkingEventData);
+
+        expect(result.success).toBe(true);
+        expect(result.eventId).toBe("networking-456");
+      });
+
+      it("should handle capacity-limited workshop event", async () => {
+        const creator = TestDataFactory.createAuthUser();
+        TestHelpers.mockAuthUser(mockSupabaseClient, creator);
+        TestHelpers.mockEventCreation(mockSupabaseClient, "workshop-789");
+        TestHelpers.mockOrganizerInsertion(mockSupabaseClient);
+
+        const workshopData = {
+          title: "Hands-on React Workshop",
+          description:
+            "Limited seats! Intensive 3-hour workshop covering React hooks, state management, and testing.",
+          date: "2025-10-30",
+          start_time: "09:00",
+          end_time: "12:00",
+          place: "Startup Incubator Munich",
+          location_details: "Workshop room A, 2nd floor. Laptops required.",
+          max_attendees: 8, // Very limited capacity
+          category: "workshop",
+          is_public: false, // Private workshop
+        };
+
+        const result = await createEvent(workshopData);
+
+        expect(result.success).toBe(true);
+        expect(result.eventId).toBe("workshop-789");
+      });
+    });
+
+    describe("joinEvent with complex scenarios", () => {
+      it("should handle joining a popular event near capacity", async () => {
+        const user = TestDataFactory.createAuthUser();
+        const event = TestDataFactory.createEvent(TEST_USER_1.id, {
+          max_attendees: 20,
+          title: "Popular Tech Talk",
+        });
+
+        // Create 18 existing attendees (near capacity)
+        const existingAttendees = Array.from({ length: 18 }, (_, i) =>
+          TestDataFactory.createEventAttendee(event.id, `user-${i}`, {
+            status: "confirmed",
+          })
+        );
+
+        TestHelpers.mockAuthUser(mockSupabaseClient, user);
+
+        // Mock event query
+        const eventQuery = TestHelpers.createDefaultMockQuery();
+        eventQuery.single.mockResolvedValue(
+          MockSupabaseFactory.successResponse(event)
+        );
+        mockSupabaseClient.from.mockReturnValueOnce(eventQuery);
+
+        // Mock attendee count query
+        const countQuery = TestHelpers.createDefaultMockQuery();
+        countQuery.mockResolvedValue(
+          MockSupabaseFactory.successListResponse(existingAttendees)
+        );
+        mockSupabaseClient.from.mockReturnValueOnce(countQuery);
+
+        // Mock existing attendance check
+        const existingQuery = TestHelpers.createDefaultMockQuery();
+        existingQuery.single.mockResolvedValue(
+          MockSupabaseFactory.emptyResponse()
+        );
+        mockSupabaseClient.from.mockReturnValueOnce(existingQuery);
+
+        // Mock successful insertion
+        const insertQuery = TestHelpers.createDefaultMockQuery();
+        insertQuery.mockResolvedValue(
+          MockSupabaseFactory.successResponse({
+            event_id: event.id,
+            user_id: user.id,
+          })
+        );
+        mockSupabaseClient.from.mockReturnValueOnce(insertQuery);
+
+        const result = await joinEvent(event.id);
+
+        expect(result.success).toBe(true);
+        expect(result.message).toBe("Successfully joined the event!");
+      });
+
+      it("should reject joining when event is at capacity", async () => {
+        const user = TestDataFactory.createAuthUser();
+        const event = TestDataFactory.createEvent(TEST_USER_1.id, {
+          max_attendees: 5,
+          title: "Small Workshop",
+        });
+
+        // Create exactly 5 confirmed attendees (at capacity)
+        const maxAttendees = Array.from({ length: 5 }, (_, i) =>
+          TestDataFactory.createEventAttendee(event.id, `user-${i}`, {
+            status: "confirmed",
+          })
+        );
+
+        TestHelpers.mockAuthUser(mockSupabaseClient, user);
+
+        // Mock event query
+        const eventQuery = TestHelpers.createDefaultMockQuery();
+        eventQuery.single.mockResolvedValue(
+          MockSupabaseFactory.successResponse(event)
+        );
+        mockSupabaseClient.from.mockReturnValueOnce(eventQuery);
+
+        // Mock attendee count query showing full capacity
+        const countQuery = TestHelpers.createDefaultMockQuery();
+        countQuery.mockResolvedValue(
+          MockSupabaseFactory.successListResponse(maxAttendees)
+        );
+        mockSupabaseClient.from.mockReturnValueOnce(countQuery);
+
+        // Mock existing attendance check
+        const existingQuery = TestHelpers.createDefaultMockQuery();
+        existingQuery.single.mockResolvedValue(
+          MockSupabaseFactory.emptyResponse()
+        );
+        mockSupabaseClient.from.mockReturnValueOnce(existingQuery);
+
+        const result = await joinEvent(event.id);
+
+        expect(result.success).toBe(false);
+        expect(result.message).toBe("Event is at maximum capacity");
+      });
+    });
+
+    describe("Event attendance edge cases", () => {
+      it("should handle multiple rapid join requests", async () => {
+        const users = Array.from({ length: 3 }, () =>
+          TestDataFactory.createAuthUser()
+        );
+        const event = TestDataFactory.createEvent(TEST_USER_1.id, {
+          max_attendees: 10,
+          title: "Concurrent Join Test Event",
+        });
+
+        // Simulate concurrent join attempts
+        const joinPromises = users.map((user) => {
+          TestHelpers.mockAuthUser(mockSupabaseClient, user);
+
+          // Mock event exists
+          const eventQuery = TestHelpers.createDefaultMockQuery();
+          eventQuery.single.mockResolvedValue(
+            MockSupabaseFactory.successResponse(event)
+          );
+          mockSupabaseClient.from.mockReturnValueOnce(eventQuery);
+
+          // Mock capacity check (event not full)
+          const countQuery = TestHelpers.createDefaultMockQuery();
+          countQuery.mockResolvedValue(
+            MockSupabaseFactory.successListResponse([]) // Empty initially
+          );
+          mockSupabaseClient.from.mockReturnValueOnce(countQuery);
+
+          // Mock not already attending
+          const existingQuery = TestHelpers.createDefaultMockQuery();
+          existingQuery.single.mockResolvedValue(
+            MockSupabaseFactory.emptyResponse()
+          );
+          mockSupabaseClient.from.mockReturnValueOnce(existingQuery);
+
+          // Mock successful insertion
+          const insertQuery = TestHelpers.createDefaultMockQuery();
+          insertQuery.mockResolvedValue(
+            MockSupabaseFactory.successResponse({
+              event_id: event.id,
+              user_id: user.id,
+            })
+          );
+          mockSupabaseClient.from.mockReturnValueOnce(insertQuery);
+
+          return joinEvent(event.id);
+        });
+
+        const results = await Promise.all(joinPromises);
+
+        // All should succeed in this test scenario
+        results.forEach((result) => {
+          expect(result.success).toBe(true);
+        });
+      });
+
+      it("should handle leaving event with multiple organizers", async () => {
+        const mainOrganizer = TestDataFactory.createAuthUser();
+        const coOrganizer = TestDataFactory.createAuthUser();
+        const event = TestDataFactory.createEvent(mainOrganizer.id, {
+          title: "Multi-Organizer Event",
+        });
+
+        // Create organizer relationships
+        const organizers = [
+          TestDataFactory.createEventOrganizer(event.id, mainOrganizer.id, {
+            role: "organizer",
+          }),
+          TestDataFactory.createEventOrganizer(event.id, coOrganizer.id, {
+            role: "co-organizer",
+          }),
+        ];
+
+        TestHelpers.mockAuthUser(mockSupabaseClient, coOrganizer);
+
+        // Mock organizer check
+        const organizerQuery = TestHelpers.createDefaultMockQuery();
+        organizerQuery.single.mockResolvedValue(
+          MockSupabaseFactory.successResponse(organizers[1])
+        );
+        mockSupabaseClient.from.mockReturnValueOnce(organizerQuery);
+
+        const result = await leaveEvent(event.id);
+
+        expect(result.success).toBe(false);
+        expect(result.message).toBe(
+          "Event organizers cannot leave their own events"
+        );
+      });
+    });
+
+    describe("Event data validation with realistic data", () => {
+      it("should validate comprehensive event data scenarios", async () => {
+        const creator = TestDataFactory.createAuthUser();
+        TestHelpers.mockAuthUser(mockSupabaseClient, creator);
+
+        // Test various invalid scenarios
+        const invalidScenarios = [
+          {
+            name: "Empty title",
+            data: { title: "", date: "2025-12-01", place: "Test Location" },
+            expectedMessage: "Title, date, and place are required fields",
+          },
+          {
+            name: "Weekend past date",
+            data: {
+              title: "Test Event",
+              date: "2024-01-01",
+              place: "Test Location",
+            },
+            expectedMessage: "Event date cannot be in the past",
+          },
+          {
+            name: "Invalid time range",
+            data: {
+              title: "Test Event",
+              date: "2025-12-01",
+              place: "Test Location",
+              start_time: "20:00",
+              end_time: "08:00",
+            },
+            expectedMessage: "End time must be after start time",
+          },
+          {
+            name: "Negative capacity",
+            data: {
+              title: "Test Event",
+              date: "2025-12-01",
+              place: "Test Location",
+              max_attendees: -5,
+            },
+            expectedMessage: "Maximum attendees must be at least 1",
+          },
+        ];
+
+        for (const scenario of invalidScenarios) {
+          const result = await createEvent(scenario.data);
+          expect(result.success).toBe(false);
+          expect(result.message).toBe(scenario.expectedMessage);
+        }
+      });
     });
   });
 });

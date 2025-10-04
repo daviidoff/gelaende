@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
-import { Edit, Share2, User } from "lucide-react";
+import { Edit, Share2, User, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ActivityHistoryComponent } from "./ActivityHistoryComponent";
@@ -112,6 +112,17 @@ export function ProfileComponent({ initialProfile }: ProfileComponentProps) {
     router.push("/profile/edit");
   };
 
+  const handleLogout = async () => {
+    try {
+      const supabase = createClient();
+      await supabase.auth.signOut();
+      router.push("/auth/login");
+    } catch (error) {
+      console.error("Error logging out:", error);
+      alert("Failed to log out. Please try again.");
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -171,6 +182,15 @@ export function ProfileComponent({ initialProfile }: ProfileComponentProps) {
               >
                 <Edit className="h-4 w-4" />
                 Edit
+              </Button>
+              <Button
+                onClick={handleLogout}
+                variant="destructive"
+                size="sm"
+                className="flex items-center gap-2"
+              >
+                <LogOut className="h-4 w-4" />
+                Logout
               </Button>
             </div>
           </div>

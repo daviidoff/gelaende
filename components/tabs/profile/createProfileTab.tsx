@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
   createProfile,
@@ -22,6 +23,7 @@ export function CreateProfileTab({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<"div">) {
+  const router = useRouter();
   const [name, setName] = useState("");
   const [studiengang, setStudiengang] = useState("");
   const [university, setUniversity] = useState("");
@@ -45,10 +47,11 @@ export function CreateProfileTab({
 
       if (result.success) {
         setSuccess(true);
-        // Reset form
-        setName("");
-        setStudiengang("");
-        setUniversity("");
+        // Redirect to the main app after a short delay
+        setTimeout(() => {
+          router.push("/map");
+          router.refresh();
+        }, 1500);
       } else {
         setError(result.message);
       }
@@ -67,22 +70,13 @@ export function CreateProfileTab({
         <Card>
           <CardHeader>
             <CardTitle className="text-2xl">Profile Created!</CardTitle>
-            <CardDescription>
-              Your profile has been successfully created
-            </CardDescription>
+            <CardDescription>Redirecting you to the app...</CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              You can now use all features of the application. Your profile
-              information will be visible to other users.
+              Your profile has been successfully created. You&apos;ll be
+              redirected to the app shortly.
             </p>
-            <Button
-              onClick={() => setSuccess(false)}
-              className="mt-4"
-              variant="outline"
-            >
-              Create Another Profile
-            </Button>
           </CardContent>
         </Card>
       ) : (

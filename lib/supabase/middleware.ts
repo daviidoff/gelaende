@@ -59,6 +59,47 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  // Check if authenticated user has a profile
+  // Only check for authenticated users on protected routes
+  if (
+    user &&
+    !request.nextUrl.pathname.startsWith("/auth") &&
+    !request.nextUrl.pathname.startsWith("/profile/create") &&
+    request.nextUrl.pathname !== "/"
+  ) {
+    // Check if we have a cached profile status
+    const hasProfileCookie = request.cookies.get("has_profile");
+
+    // If coming from profile creation page, clear the cache to force recheck
+    const referer = request.headers.get("referer") || "";
+    const fromProfileCreate = referer.includes("/profile/create");
+
+    if (!hasProfileCookie || fromProfileCreate) {
+      // Check if user has a profile (only when not cached)
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("profile_id")
+        .eq("user_id", user.sub)
+        .maybeSingle();
+
+      if (!profile) {
+        // User doesn't have a profile, redirect to profile creation
+        const url = request.nextUrl.clone();
+        url.pathname = "/profile/create";
+        return NextResponse.redirect(url);
+      } else {
+        // Cache the profile existence for 1 hour to avoid repeated DB queries
+        supabaseResponse.cookies.set("has_profile", "true", {
+          maxAge: 60 * 60, // 1 hour
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "lax",
+        });
+      }
+    }
+    // If cookie exists and not from profile creation, skip DB query (fast path)
+  }
+
   // IMPORTANT: You *must* return the supabaseResponse object as it is.
   // If you're creating a new response object with NextResponse.next() make sure to:
   // 1. Pass the request in it, like so:

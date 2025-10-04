@@ -597,7 +597,7 @@ describe("Events Integration Tests", () => {
       );
 
       const eventsQuery = mockSupabaseClient.from().select();
-      eventsQuery.in.mockReturnThis();
+      eventsQuery.or.mockReturnThis();
       eventsQuery.eq.mockReturnThis();
       eventsQuery.gte.mockReturnThis();
       eventsQuery.order.mockReturnValue({

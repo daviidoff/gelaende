@@ -123,7 +123,7 @@ describe("Events Data Functions", () => {
       // Mock events query
       const eventsQuery = {
         select: jest.fn().mockReturnThis(),
-        in: jest.fn().mockReturnThis(),
+        or: jest.fn().mockReturnThis(),
         eq: jest.fn().mockReturnThis(),
         gte: jest.fn().mockReturnThis(),
         order: jest.fn().mockReturnThis(),
@@ -248,7 +248,7 @@ describe("Events Data Functions", () => {
 
       const eventsQuery = {
         select: jest.fn().mockReturnThis(),
-        in: jest.fn().mockReturnThis(),
+        or: jest.fn().mockReturnThis(),
         eq: jest.fn().mockReturnThis(),
         gte: jest.fn().mockReturnThis(),
         order: jest.fn().mockReturnThis(),
@@ -266,6 +266,188 @@ describe("Events Data Functions", () => {
 
       expect(result.success).toBe(false);
       expect(result.message).toBe("Error fetching events: Events fetch error");
+    });
+
+    it("should filter out past events based on date and time", async () => {
+      // Mock auth response
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: mockUser },
+        error: null,
+      });
+
+      // Mock friendships query
+      const friendshipsQuery = {
+        select: jest.fn().mockReturnThis(),
+        or: jest.fn().mockResolvedValue({
+          data: mockFriendships,
+          error: null,
+        }),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(friendshipsQuery);
+
+      // Create a past event (yesterday) and a future event
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
+      const pastEvent = {
+        ...mockEvent,
+        id: "past-event",
+        title: "Past Event",
+        date: yesterday.toISOString().split("T")[0],
+        start_time: "10:00:00",
+        created_by: mockFriendId1,
+      };
+
+      const futureEvent = {
+        ...mockEvent,
+        id: "future-event",
+        title: "Future Event",
+        date: tomorrow.toISOString().split("T")[0],
+        start_time: "15:00:00",
+        created_by: mockFriendId1,
+      };
+
+      // Mock events query returning both past and future events
+      const eventsQuery = {
+        select: jest.fn().mockReturnThis(),
+        or: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        gte: jest.fn().mockReturnThis(),
+        order: jest.fn().mockReturnThis(),
+      };
+      eventsQuery.order.mockReturnValue({
+        order: jest.fn().mockResolvedValue({
+          data: [pastEvent, futureEvent],
+          error: null,
+        }),
+      });
+      mockSupabaseClient.from.mockReturnValueOnce(eventsQuery);
+
+      // Mock attendees query
+      const attendeesQuery = {
+        select: jest.fn().mockReturnThis(),
+        in: jest.fn().mockResolvedValue({
+          data: [],
+          error: null,
+        }),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(attendeesQuery);
+
+      // Mock organizers query
+      const organizersQuery = {
+        select: jest.fn().mockReturnThis(),
+        in: jest.fn().mockResolvedValue({
+          data: [],
+          error: null,
+        }),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(organizersQuery);
+
+      const result = await getUpcomingFriendsEvents();
+
+      expect(result.success).toBe(true);
+      // Should only return future event, not past event
+      expect(result.data).toHaveLength(1);
+      expect(result.data![0].title).toBe("Future Event");
+      expect(result.data![0].id).toBe("future-event");
+    });
+
+    it("should filter out events from today that have already passed", async () => {
+      // Mock auth response
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: mockUser },
+        error: null,
+      });
+
+      // Mock friendships query
+      const friendshipsQuery = {
+        select: jest.fn().mockReturnThis(),
+        or: jest.fn().mockResolvedValue({
+          data: mockFriendships,
+          error: null,
+        }),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(friendshipsQuery);
+
+      const today = new Date().toISOString().split("T")[0];
+      const now = new Date();
+
+      // Event that already happened today (2 hours ago)
+      const pastTime = new Date(now.getTime() - 2 * 60 * 60 * 1000);
+      const pastTimeStr = `${pastTime
+        .getHours()
+        .toString()
+        .padStart(2, "0")}:00:00`;
+
+      // Event happening later today (2 hours from now)
+      const futureTime = new Date(now.getTime() + 2 * 60 * 60 * 1000);
+      const futureTimeStr = `${futureTime
+        .getHours()
+        .toString()
+        .padStart(2, "0")}:00:00`;
+
+      const pastEventToday = {
+        ...mockEvent,
+        id: "past-today",
+        title: "Past Event Today",
+        date: today,
+        start_time: pastTimeStr,
+        created_by: mockFriendId1,
+      };
+
+      const futureEventToday = {
+        ...mockEvent,
+        id: "future-today",
+        title: "Future Event Today",
+        date: today,
+        start_time: futureTimeStr,
+        created_by: mockFriendId1,
+      };
+
+      // Mock events query
+      const eventsQuery = {
+        select: jest.fn().mockReturnThis(),
+        or: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        gte: jest.fn().mockReturnThis(),
+        order: jest.fn().mockReturnThis(),
+      };
+      eventsQuery.order.mockReturnValue({
+        order: jest.fn().mockResolvedValue({
+          data: [pastEventToday, futureEventToday],
+          error: null,
+        }),
+      });
+      mockSupabaseClient.from.mockReturnValueOnce(eventsQuery);
+
+      // Mock attendees query
+      const attendeesQuery = {
+        select: jest.fn().mockReturnThis(),
+        in: jest.fn().mockResolvedValue({
+          data: [],
+          error: null,
+        }),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(attendeesQuery);
+
+      // Mock organizers query
+      const organizersQuery = {
+        select: jest.fn().mockReturnThis(),
+        in: jest.fn().mockResolvedValue({
+          data: [],
+          error: null,
+        }),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(organizersQuery);
+
+      const result = await getUpcomingFriendsEvents();
+
+      expect(result.success).toBe(true);
+      // Should only return the future event from today
+      expect(result.data).toHaveLength(1);
+      expect(result.data![0].title).toBe("Future Event Today");
     });
   });
 
@@ -351,6 +533,159 @@ describe("Events Data Functions", () => {
       await getUpcomingEvents();
 
       expect(eventsQuery.gte).toHaveBeenCalled();
+    });
+
+    it("should filter out past events based on date and time", async () => {
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: mockUser },
+        error: null,
+      });
+
+      // Create a past event and a future event
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
+      const pastEvent = {
+        ...mockEvent,
+        id: "past-public-event",
+        title: "Past Public Event",
+        date: yesterday.toISOString().split("T")[0],
+        start_time: "10:00:00",
+      };
+
+      const futureEvent = {
+        ...mockEvent,
+        id: "future-public-event",
+        title: "Future Public Event",
+        date: tomorrow.toISOString().split("T")[0],
+        start_time: "15:00:00",
+      };
+
+      const eventsQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        gte: jest.fn().mockReturnThis(),
+        order: jest.fn().mockReturnThis(),
+      };
+
+      eventsQuery.order.mockReturnValue({
+        order: jest.fn().mockResolvedValue({
+          data: [pastEvent, futureEvent],
+          error: null,
+        }),
+      });
+      mockSupabaseClient.from.mockReturnValueOnce(eventsQuery);
+
+      // Mock attendees query
+      const attendeesQuery = {
+        select: jest.fn().mockReturnThis(),
+        in: jest.fn().mockResolvedValue({
+          data: [],
+          error: null,
+        }),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(attendeesQuery);
+
+      // Mock organizers query
+      const organizersQuery = {
+        select: jest.fn().mockReturnThis(),
+        in: jest.fn().mockResolvedValue({
+          data: [],
+          error: null,
+        }),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(organizersQuery);
+
+      const result = await getUpcomingEvents();
+
+      expect(result.success).toBe(true);
+      // Should only return future event
+      expect(result.data).toHaveLength(1);
+      expect(result.data![0].title).toBe("Future Public Event");
+    });
+
+    it("should filter out events from today that have already started", async () => {
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: mockUser },
+        error: null,
+      });
+
+      const today = new Date().toISOString().split("T")[0];
+      const now = new Date();
+
+      // Event that already started (1 hour ago)
+      const pastTime = new Date(now.getTime() - 1 * 60 * 60 * 1000);
+      const pastTimeStr = `${pastTime
+        .getHours()
+        .toString()
+        .padStart(2, "0")}:00:00`;
+
+      // Event starting later (3 hours from now)
+      const futureTime = new Date(now.getTime() + 3 * 60 * 60 * 1000);
+      const futureTimeStr = `${futureTime
+        .getHours()
+        .toString()
+        .padStart(2, "0")}:00:00`;
+
+      const pastEventToday = {
+        ...mockEvent,
+        id: "past-public-today",
+        title: "Past Public Event Today",
+        date: today,
+        start_time: pastTimeStr,
+      };
+
+      const futureEventToday = {
+        ...mockEvent,
+        id: "future-public-today",
+        title: "Future Public Event Today",
+        date: today,
+        start_time: futureTimeStr,
+      };
+
+      const eventsQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        gte: jest.fn().mockReturnThis(),
+        order: jest.fn().mockReturnThis(),
+      };
+
+      eventsQuery.order.mockReturnValue({
+        order: jest.fn().mockResolvedValue({
+          data: [pastEventToday, futureEventToday],
+          error: null,
+        }),
+      });
+      mockSupabaseClient.from.mockReturnValueOnce(eventsQuery);
+
+      // Mock attendees query
+      const attendeesQuery = {
+        select: jest.fn().mockReturnThis(),
+        in: jest.fn().mockResolvedValue({
+          data: [],
+          error: null,
+        }),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(attendeesQuery);
+
+      // Mock organizers query
+      const organizersQuery = {
+        select: jest.fn().mockReturnThis(),
+        in: jest.fn().mockResolvedValue({
+          data: [],
+          error: null,
+        }),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(organizersQuery);
+
+      const result = await getUpcomingEvents();
+
+      expect(result.success).toBe(true);
+      // Should only return the future event
+      expect(result.data).toHaveLength(1);
+      expect(result.data![0].title).toBe("Future Public Event Today");
     });
   });
 
@@ -764,7 +1099,7 @@ describe("Events Data Functions", () => {
 
         // Mock events query
         const eventsQuery = mockSupabaseClient.from().select();
-        eventsQuery.in.mockReturnThis();
+        eventsQuery.or.mockReturnThis();
         eventsQuery.eq.mockReturnThis();
         eventsQuery.gte.mockReturnThis();
         eventsQuery.order.mockReturnValue({
@@ -775,18 +1110,31 @@ describe("Events Data Functions", () => {
             ),
         });
 
-        // Mock attendees and organizers for each event
-        friendsEvents.forEach((event) => {
-          const attendeesQuery = mockSupabaseClient.from().select();
-          attendeesQuery.eq.mockResolvedValue(
-            MockSupabaseFactory.successListResponse(event.attendees || [])
-          );
+        // Mock batch attendees query
+        const allAttendees = friendsEvents.flatMap((event) =>
+          (event.attendees || []).map((a) => ({
+            event_id: event.id,
+            user_id: a.user_id || a,
+            status: a.status || "confirmed",
+          }))
+        );
+        const attendeesQuery = mockSupabaseClient.from().select();
+        attendeesQuery.in.mockResolvedValue(
+          MockSupabaseFactory.successListResponse(allAttendees)
+        );
 
-          const organizersQuery = mockSupabaseClient.from().select();
-          organizersQuery.eq.mockResolvedValue(
-            MockSupabaseFactory.successListResponse(event.organizers || [])
-          );
-        });
+        // Mock batch organizers query
+        const allOrganizers = friendsEvents.flatMap((event) =>
+          (event.organizers || []).map((o) => ({
+            event_id: event.id,
+            user_id: o.user_id || o,
+            role: o.role || "organizer",
+          }))
+        );
+        const organizersQuery = mockSupabaseClient.from().select();
+        organizersQuery.in.mockResolvedValue(
+          MockSupabaseFactory.successListResponse(allOrganizers)
+        );
 
         const result = await getUpcomingFriendsEvents();
 
@@ -819,7 +1167,7 @@ describe("Events Data Functions", () => {
 
         // Mock empty events query
         const eventsQuery = mockSupabaseClient.from().select();
-        eventsQuery.in.mockReturnThis();
+        eventsQuery.or.mockReturnThis();
         eventsQuery.eq.mockReturnThis();
         eventsQuery.gte.mockReturnThis();
         eventsQuery.order.mockReturnValue({
@@ -1010,12 +1358,18 @@ describe("Events Data Functions", () => {
         TestHelpers.mockAuthUser(mockSupabaseClient, user);
 
         // Create event with missing fields (simulating database inconsistency)
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
         const malformedEvent = {
           id: "malformed-event",
           title: "Incomplete Event",
-          // Missing required fields like date, place, etc.
+          date: tomorrow.toISOString().split("T")[0], // Add date so it's not filtered out
+          start_time: "10:00:00",
+          // Missing other fields like place, description, etc.
           created_by: user.id,
           status: "published",
+          is_public: true,
         };
 
         const eventsQuery = mockSupabaseClient.from().select();
@@ -1031,13 +1385,13 @@ describe("Events Data Functions", () => {
 
         // Mock attendees query
         const attendeesQuery = mockSupabaseClient.from().select();
-        attendeesQuery.eq.mockResolvedValue(
+        attendeesQuery.in.mockResolvedValue(
           MockSupabaseFactory.successListResponse([])
         );
 
         // Mock organizers query
         const organizersQuery = mockSupabaseClient.from().select();
-        organizersQuery.eq.mockResolvedValue(
+        organizersQuery.in.mockResolvedValue(
           MockSupabaseFactory.successListResponse([])
         );
 
@@ -1111,6 +1465,186 @@ describe("Events Data Functions", () => {
           expect(result.success).toBe(true);
           expect(result.data).toHaveLength(1);
         });
+      });
+    });
+
+    describe("getMyEvents - filtering past events", () => {
+      it("should filter out past events from my events", async () => {
+        mockSupabaseClient.auth.getUser.mockResolvedValue({
+          data: { user: mockUser },
+          error: null,
+        });
+
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
+        const pastAttendingEvent = {
+          event_id: "past-attending",
+          status: "confirmed",
+          events: {
+            ...mockEvent,
+            id: "past-attending",
+            title: "Past Event I'm Attending",
+            date: yesterday.toISOString().split("T")[0],
+            start_time: "10:00:00",
+          },
+        };
+
+        const futureAttendingEvent = {
+          event_id: "future-attending",
+          status: "confirmed",
+          events: {
+            ...mockEvent,
+            id: "future-attending",
+            title: "Future Event I'm Attending",
+            date: tomorrow.toISOString().split("T")[0],
+            start_time: "15:00:00",
+          },
+        };
+
+        const attendingQuery = {
+          select: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockReturnThis(),
+          in: jest.fn().mockReturnThis(),
+          order: jest.fn().mockResolvedValue({
+            data: [pastAttendingEvent, futureAttendingEvent],
+            error: null,
+          }),
+        };
+        mockSupabaseClient.from.mockReturnValueOnce(attendingQuery);
+
+        const organizingQuery = {
+          select: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockReturnThis(),
+          order: jest.fn().mockResolvedValue({
+            data: [],
+            error: null,
+          }),
+        };
+        mockSupabaseClient.from.mockReturnValueOnce(organizingQuery);
+
+        // Mock attendee count queries
+        const attendeeCountQuery1 = {
+          select: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockResolvedValue({
+            data: [],
+            error: null,
+          }),
+        };
+        mockSupabaseClient.from.mockReturnValueOnce(attendeeCountQuery1);
+
+        const attendeeCountQuery2 = {
+          select: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockResolvedValue({
+            data: [],
+            error: null,
+          }),
+        };
+        mockSupabaseClient.from.mockReturnValueOnce(attendeeCountQuery2);
+
+        const result = await getMyEvents();
+
+        expect(result.success).toBe(true);
+        // Should only return future event
+        expect(result.data).toHaveLength(1);
+        expect(result.data![0].title).toBe("Future Event I'm Attending");
+      });
+
+      it("should filter out events from today that have already started", async () => {
+        mockSupabaseClient.auth.getUser.mockResolvedValue({
+          data: { user: mockUser },
+          error: null,
+        });
+
+        const today = new Date().toISOString().split("T")[0];
+        const now = new Date();
+
+        // Event that started 1 hour ago
+        const pastTime = new Date(now.getTime() - 1 * 60 * 60 * 1000);
+        const pastTimeStr = `${pastTime
+          .getHours()
+          .toString()
+          .padStart(2, "0")}:00:00`;
+
+        // Event starting in 2 hours
+        const futureTime = new Date(now.getTime() + 2 * 60 * 60 * 1000);
+        const futureTimeStr = `${futureTime
+          .getHours()
+          .toString()
+          .padStart(2, "0")}:00:00`;
+
+        const pastOrgEvent = {
+          event_id: "past-org-today",
+          role: "organizer",
+          events: {
+            ...mockEvent,
+            id: "past-org-today",
+            title: "Past Organizing Event Today",
+            date: today,
+            start_time: pastTimeStr,
+          },
+        };
+
+        const futureOrgEvent = {
+          event_id: "future-org-today",
+          role: "organizer",
+          events: {
+            ...mockEvent,
+            id: "future-org-today",
+            title: "Future Organizing Event Today",
+            date: today,
+            start_time: futureTimeStr,
+          },
+        };
+
+        const attendingQuery = {
+          select: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockReturnThis(),
+          in: jest.fn().mockReturnThis(),
+          order: jest.fn().mockResolvedValue({
+            data: [],
+            error: null,
+          }),
+        };
+        mockSupabaseClient.from.mockReturnValueOnce(attendingQuery);
+
+        const organizingQuery = {
+          select: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockReturnThis(),
+          order: jest.fn().mockResolvedValue({
+            data: [pastOrgEvent, futureOrgEvent],
+            error: null,
+          }),
+        };
+        mockSupabaseClient.from.mockReturnValueOnce(organizingQuery);
+
+        // Mock attendee count queries
+        const attendeeCountQuery1 = {
+          select: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockResolvedValue({
+            data: [],
+            error: null,
+          }),
+        };
+        mockSupabaseClient.from.mockReturnValueOnce(attendeeCountQuery1);
+
+        const attendeeCountQuery2 = {
+          select: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockResolvedValue({
+            data: [],
+            error: null,
+          }),
+        };
+        mockSupabaseClient.from.mockReturnValueOnce(attendeeCountQuery2);
+
+        const result = await getMyEvents();
+
+        expect(result.success).toBe(true);
+        // Should only return the future event
+        expect(result.data).toHaveLength(1);
+        expect(result.data![0].title).toBe("Future Organizing Event Today");
       });
     });
   });

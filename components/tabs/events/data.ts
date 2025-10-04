@@ -73,7 +73,8 @@ export async function getUpcomingFriendsEvents(): Promise<GetUpcomingFriendsEven
 
     const today = new Date().toISOString().split("T")[0]; // Get current date in YYYY-MM-DD format
 
-    // Get upcoming events organized by friends
+    // Get upcoming events organized by friends OR created by the user themselves
+    // We need to include user's own events with is_public: false
     const { data: events, error: eventsError } = await supabase
       .from("events")
       .select(
@@ -81,7 +82,11 @@ export async function getUpcomingFriendsEvents(): Promise<GetUpcomingFriendsEven
         *
       `
       )
-      .in("created_by", friendIds)
+      .or(
+        `created_by.in.(${friendIds.join(
+          ","
+        )}),and(created_by.eq.${userId},is_public.eq.false)`
+      )
       .eq("status", "published")
       .gte("date", today)
       .order("date", { ascending: true })
@@ -150,10 +155,19 @@ export async function getUpcomingFriendsEvents(): Promise<GetUpcomingFriendsEven
       };
     });
 
+    // Filter out events that have already passed (including time)
+    const now = new Date();
+    const upcomingEvents = eventsWithDetails.filter((event) => {
+      const eventDateTime = new Date(
+        `${event.date}T${event.start_time || "00:00"}`
+      );
+      return eventDateTime > now;
+    });
+
     return {
       success: true,
-      message: `Found ${eventsWithDetails.length} upcoming events organized by friends`,
-      data: eventsWithDetails,
+      message: `Found ${upcomingEvents.length} upcoming events organized by friends`,
+      data: upcomingEvents,
     };
   } catch (error) {
     console.error("Error in getUpcomingFriendsEvents:", error);
@@ -266,10 +280,19 @@ export async function getUpcomingEvents(): Promise<GetUpcomingFriendsEventsResul
       };
     });
 
+    // Filter out events that have already passed (including time)
+    const now = new Date();
+    const upcomingEvents = eventsWithDetails.filter((event) => {
+      const eventDateTime = new Date(
+        `${event.date}T${event.start_time || "00:00"}`
+      );
+      return eventDateTime > now;
+    });
+
     return {
       success: true,
-      message: `Found ${eventsWithDetails.length} upcoming events`,
-      data: eventsWithDetails,
+      message: `Found ${upcomingEvents.length} upcoming events`,
+      data: upcomingEvents,
     };
   } catch (error) {
     console.error("Error in getUpcomingEvents:", error);
@@ -419,10 +442,19 @@ export async function getMyEvents(): Promise<GetUpcomingFriendsEventsResult> {
       return dateA.getTime() - dateB.getTime();
     });
 
+    // Filter out events that have already passed (including time)
+    const now = new Date();
+    const upcomingEvents = eventsWithDetails.filter((event) => {
+      const eventDateTime = new Date(
+        `${event.date}T${event.start_time || "00:00"}`
+      );
+      return eventDateTime > now;
+    });
+
     return {
       success: true,
-      message: `Found ${eventsWithDetails.length} events you're involved in`,
-      data: eventsWithDetails,
+      message: `Found ${upcomingEvents.length} events you're involved in`,
+      data: upcomingEvents,
     };
   } catch (error) {
     console.error("Error in getMyEvents:", error);

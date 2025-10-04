@@ -274,6 +274,11 @@ export interface AttendEventResult {
   message: string;
 }
 
+export interface UnattendEventResult {
+  success: boolean;
+  message: string;
+}
+
 /**
  * Server action to mark attendance for an event
  * Similar to joinEvent but with slightly different semantics -
@@ -480,6 +485,97 @@ export async function leaveEvent(eventId: string): Promise<JoinEventResult> {
     return {
       success: false,
       message: "An unexpected error occurred while leaving the event",
+    };
+  }
+}
+
+/**
+ * Server action to unattend an event (remove attendance after having attended)
+ * @param eventId - The ID of the event to unattend
+ * @returns Promise with success status and message
+ */
+export async function unattendEvent(
+  eventId: string
+): Promise<UnattendEventResult> {
+  try {
+    const supabase = await createClient();
+
+    // Get the current user
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return {
+        success: false,
+        message: "Authentication required",
+      };
+    }
+
+    const userId = user.id;
+
+    // Check if event exists and get event details
+    const { data: event, error: eventError } = await supabase
+      .from("events")
+      .select("id, title, status")
+      .eq("id", eventId)
+      .single();
+
+    if (eventError || !event) {
+      return {
+        success: false,
+        message: "Event not found",
+      };
+    }
+
+    // Check if user is attending the event
+    const { data: attendance, error: checkError } = await supabase
+      .from("event_attendees")
+      .select("id, status")
+      .eq("event_id", eventId)
+      .eq("user_id", userId)
+      .single();
+
+    if (checkError || !attendance) {
+      return {
+        success: false,
+        message: "You are not attending this event",
+      };
+    }
+
+    if (attendance.status !== "confirmed") {
+      return {
+        success: false,
+        message:
+          "You can only unattend events you have confirmed attendance for",
+      };
+    }
+
+    // Remove attendance
+    const { error: unattendError } = await supabase
+      .from("event_attendees")
+      .delete()
+      .eq("event_id", eventId)
+      .eq("user_id", userId);
+
+    if (unattendError) {
+      console.error("Error unattending event:", unattendError);
+      return {
+        success: false,
+        message: `Failed to unattend event: ${unattendError.message}`,
+      };
+    }
+
+    return {
+      success: true,
+      message: `Successfully removed attendance for "${event.title}"`,
+    };
+  } catch (error) {
+    console.error("Error in unattendEvent:", error);
+    return {
+      success: false,
+      message: "An unexpected error occurred while unattending the event",
     };
   }
 }

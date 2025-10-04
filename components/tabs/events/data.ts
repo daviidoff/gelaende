@@ -3,6 +3,16 @@
 import { createClient } from "@/lib/supabase/server";
 import { EventWithDetails } from "@/lib/types/database";
 
+// Helper function to group array by key
+function groupBy<T>(array: T[], key: keyof T): Record<string, T[]> {
+  return array.reduce((groups, item) => {
+    const group = String(item[key]);
+    groups[group] = groups[group] || [];
+    groups[group].push(item);
+    return groups;
+  }, {} as Record<string, T[]>);
+}
+
 export interface GetUpcomingFriendsEventsResult {
   success: boolean;
   message: string;
@@ -84,40 +94,61 @@ export async function getUpcomingFriendsEvents(): Promise<GetUpcomingFriendsEven
       };
     }
 
-    // For each event, get attendee and organizer counts and check if current user is attending/organizing
-    const eventsWithDetails = await Promise.all(
-      (events || []).map(async (event) => {
-        // Get attendee count and check if current user is attending
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { data: attendees, error: _attendeesError } = await supabase
-          .from("event_attendees")
-          .select("user_id, status")
-          .eq("event_id", event.id);
+    if (!events || events.length === 0) {
+      return {
+        success: true,
+        message: "No upcoming events found from friends",
+        data: [],
+      };
+    }
 
-        // Get organizers and check if current user is organizing
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { data: organizers, error: _organizersError } = await supabase
-          .from("event_organizers")
-          .select("user_id, role")
-          .eq("event_id", event.id);
+    const eventIds = events.map((e) => e.id);
 
-        const attendee_count =
-          attendees?.filter((a) => a.status === "confirmed").length || 0;
-        const is_attending =
-          attendees?.some(
-            (a) => a.user_id === userId && a.status === "confirmed"
-          ) || false;
-        const is_organizing =
-          organizers?.some((o) => o.user_id === userId) || false;
+    // Batch query for ALL attendees (single query instead of N queries)
+    const { data: allAttendees } = await supabase
+      .from("event_attendees")
+      .select("event_id, user_id, status")
+      .in("event_id", eventIds);
 
-        return {
-          ...event,
-          attendee_count,
-          is_attending,
-          is_organizing,
-        } as EventWithDetails;
-      })
-    );
+    // Batch query for ALL organizers (single query instead of N queries)
+    const { data: allOrganizers } = await supabase
+      .from("event_organizers")
+      .select("event_id, user_id, role")
+      .in("event_id", eventIds);
+
+    // Group data by event_id for fast lookup
+    const attendeesByEvent = groupBy(allAttendees || [], "event_id") as Record<
+      string,
+      Array<{ event_id: string; user_id: string; status: string }>
+    >;
+    const organizersByEvent = groupBy(
+      allOrganizers || [],
+      "event_id"
+    ) as Record<
+      string,
+      Array<{ event_id: string; user_id: string; role: string }>
+    >;
+
+    // Enrich events with attendance data (all in memory, no more DB calls)
+    const eventsWithDetails: EventWithDetails[] = events.map((event) => {
+      const eventAttendees = attendeesByEvent[event.id] || [];
+      const eventOrganizers = organizersByEvent[event.id] || [];
+
+      const attendee_count = eventAttendees.filter(
+        (a) => a.status === "confirmed"
+      ).length;
+      const is_attending = eventAttendees.some(
+        (a) => a.user_id === userId && a.status === "confirmed"
+      );
+      const is_organizing = eventOrganizers.some((o) => o.user_id === userId);
+
+      return {
+        ...event,
+        attendee_count,
+        is_attending,
+        is_organizing,
+      };
+    });
 
     return {
       success: true,
@@ -179,40 +210,61 @@ export async function getUpcomingEvents(): Promise<GetUpcomingFriendsEventsResul
       };
     }
 
-    // For each event, get attendee and organizer counts and check if current user is attending/organizing
-    const eventsWithDetails = await Promise.all(
-      (events || []).map(async (event) => {
-        // Get attendee count and check if current user is attending
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { data: attendees, error: _attendeesError } = await supabase
-          .from("event_attendees")
-          .select("user_id, status")
-          .eq("event_id", event.id);
+    if (!events || events.length === 0) {
+      return {
+        success: true,
+        message: "No upcoming events found",
+        data: [],
+      };
+    }
 
-        // Get organizers and check if current user is organizing
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { data: organizers, error: _organizersError } = await supabase
-          .from("event_organizers")
-          .select("user_id, role")
-          .eq("event_id", event.id);
+    const eventIds = events.map((e) => e.id);
 
-        const attendee_count =
-          attendees?.filter((a) => a.status === "confirmed").length || 0;
-        const is_attending =
-          attendees?.some(
-            (a) => a.user_id === userId && a.status === "confirmed"
-          ) || false;
-        const is_organizing =
-          organizers?.some((o) => o.user_id === userId) || false;
+    // Batch query for ALL attendees (single query instead of N queries)
+    const { data: allAttendees } = await supabase
+      .from("event_attendees")
+      .select("event_id, user_id, status")
+      .in("event_id", eventIds);
 
-        return {
-          ...event,
-          attendee_count,
-          is_attending,
-          is_organizing,
-        } as EventWithDetails;
-      })
-    );
+    // Batch query for ALL organizers (single query instead of N queries)
+    const { data: allOrganizers } = await supabase
+      .from("event_organizers")
+      .select("event_id, user_id, role")
+      .in("event_id", eventIds);
+
+    // Group data by event_id for fast lookup
+    const attendeesByEvent = groupBy(allAttendees || [], "event_id") as Record<
+      string,
+      Array<{ event_id: string; user_id: string; status: string }>
+    >;
+    const organizersByEvent = groupBy(
+      allOrganizers || [],
+      "event_id"
+    ) as Record<
+      string,
+      Array<{ event_id: string; user_id: string; role: string }>
+    >;
+
+    // Enrich events with attendance data (all in memory, no more DB calls)
+    const eventsWithDetails: EventWithDetails[] = events.map((event) => {
+      const eventAttendees = attendeesByEvent[event.id] || [];
+      const eventOrganizers = organizersByEvent[event.id] || [];
+
+      const attendee_count = eventAttendees.filter(
+        (a) => a.status === "confirmed"
+      ).length;
+      const is_attending = eventAttendees.some(
+        (a) => a.user_id === userId && a.status === "confirmed"
+      );
+      const is_organizing = eventOrganizers.some((o) => o.user_id === userId);
+
+      return {
+        ...event,
+        attendee_count,
+        is_attending,
+        is_organizing,
+      };
+    });
 
     return {
       success: true,

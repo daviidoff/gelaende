@@ -13,6 +13,7 @@ import { CalendarIcon, ClockIcon, MapPinIcon, UsersIcon } from "lucide-react";
 interface EventCardProps {
   event: Event | EventWithDetails;
   onJoin?: (eventId: string) => void;
+  onUnattend?: (eventId: string) => void;
   isJoined?: boolean;
   showJoinButton?: boolean;
 }
@@ -20,6 +21,7 @@ interface EventCardProps {
 export default function EventCard({
   event,
   onJoin,
+  onUnattend,
   isJoined = false,
   showJoinButton = true,
 }: EventCardProps) {
@@ -159,22 +161,31 @@ export default function EventCard({
 
       {showJoinButton && event.status === "published" && (
         <CardFooter className="pt-3">
-          <Button
-            onClick={() => onJoin?.(event.id)}
-            variant={
-              isJoined || ("is_attending" in event && event.is_attending)
-                ? "secondary"
-                : "default"
-            }
-            className="w-full"
-            disabled={
-              isJoined || ("is_attending" in event && event.is_attending)
-            }
-          >
-            {isJoined || ("is_attending" in event && event.is_attending)
-              ? "Teilgenommen"
-              : "Teilnehmen"}
-          </Button>
+          {isJoined || ("is_attending" in event && event.is_attending) ? (
+            <div className="w-full flex gap-2">
+              <Button variant="secondary" className="flex-1" disabled>
+                Teilgenommen
+              </Button>
+              {onUnattend && (
+                <Button
+                  onClick={() => onUnattend(event.id)}
+                  variant="outline"
+                  size="sm"
+                  className="px-3"
+                >
+                  Nicht teilgenommen
+                </Button>
+              )}
+            </div>
+          ) : (
+            <Button
+              onClick={() => onJoin?.(event.id)}
+              variant="default"
+              className="w-full"
+            >
+              Teilnehmen
+            </Button>
+          )}
         </CardFooter>
       )}
     </Card>

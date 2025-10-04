@@ -5,7 +5,13 @@ import {
   TestDataFactory,
   TestHelpers,
 } from "@/lib/test-factories";
-import { attendEvent, createEvent, joinEvent, leaveEvent } from "../actions";
+import {
+  attendEvent,
+  createEvent,
+  joinEvent,
+  leaveEvent,
+  unattendEvent,
+} from "../actions";
 
 // Mock modules
 jest.mock("@/lib/supabase/server");
@@ -1319,6 +1325,7 @@ describe("Events Actions Functions", () => {
         const event = TestDataFactory.createEvent(TEST_USER_1.id, {
           max_attendees: 20,
           title: "Popular Tech Talk",
+          status: "published",
         });
 
         // Create 18 existing attendees (near capacity)
@@ -1364,7 +1371,7 @@ describe("Events Actions Functions", () => {
         const result = await joinEvent(event.id);
 
         expect(result.success).toBe(true);
-        expect(result.message).toBe("Successfully joined the event!");
+        expect(result.message).toBe('Successfully joined "Popular Tech Talk"!');
       });
 
       it("should reject joining when event is at capacity", async () => {
@@ -1372,6 +1379,7 @@ describe("Events Actions Functions", () => {
         const event = TestDataFactory.createEvent(TEST_USER_1.id, {
           max_attendees: 5,
           title: "Small Workshop",
+          status: "published",
         });
 
         // Create exactly 5 confirmed attendees (at capacity)
@@ -1383,31 +1391,31 @@ describe("Events Actions Functions", () => {
 
         TestHelpers.mockAuthUser(mockSupabaseClient, user);
 
-        // Mock event query
+        // Mock event query (first)
         const eventQuery = TestHelpers.createDefaultMockQuery();
         eventQuery.single.mockResolvedValue(
           MockSupabaseFactory.successResponse(event)
         );
         mockSupabaseClient.from.mockReturnValueOnce(eventQuery);
 
-        // Mock attendee count query showing full capacity
-        const countQuery = TestHelpers.createDefaultMockQuery();
-        countQuery.mockResolvedValue(
-          MockSupabaseFactory.successListResponse(maxAttendees)
-        );
-        mockSupabaseClient.from.mockReturnValueOnce(countQuery);
-
-        // Mock existing attendance check
+        // Mock existing attendance check (second) - no existing attendance
         const existingQuery = TestHelpers.createDefaultMockQuery();
         existingQuery.single.mockResolvedValue(
           MockSupabaseFactory.emptyResponse()
         );
         mockSupabaseClient.from.mockReturnValueOnce(existingQuery);
 
+        // Mock attendee count query showing full capacity (third)
+        const countQuery = TestHelpers.createDefaultMockQuery();
+        countQuery.mockResolvedValue(
+          MockSupabaseFactory.successListResponse(maxAttendees)
+        );
+        mockSupabaseClient.from.mockReturnValueOnce(countQuery);
+
         const result = await joinEvent(event.id);
 
         expect(result.success).toBe(false);
-        expect(result.message).toBe("Event is at maximum capacity");
+        expect(result.message).toBe("This event is at full capacity");
       });
     });
 
@@ -1552,6 +1560,230 @@ describe("Events Actions Functions", () => {
           expect(result.message).toBe(scenario.expectedMessage);
         }
       });
+    });
+  });
+
+  describe("unattendEvent", () => {
+    const mockEvent = {
+      id: mockEventId,
+      title: "Test Event",
+      status: "published",
+    };
+
+    it("should unattend an event successfully", async () => {
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: mockUser },
+        error: null,
+      });
+
+      // Mock event lookup
+      const eventQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: mockEvent,
+          error: null,
+        }),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(eventQuery);
+
+      // Mock attendance check
+      const attendanceQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn(() => ({
+          eq: jest.fn(() => ({
+            single: jest.fn().mockResolvedValue({
+              data: { id: "attendance-123", status: "confirmed" },
+              error: null,
+            }),
+          })),
+        })),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(attendanceQuery);
+
+      // Mock deletion
+      const deleteQuery = {
+        delete: jest.fn().mockReturnThis(),
+        eq: jest.fn(() => ({
+          eq: jest.fn().mockResolvedValue({
+            data: null,
+            error: null,
+          }),
+        })),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(deleteQuery);
+
+      const result = await unattendEvent(mockEventId);
+
+      expect(result.success).toBe(true);
+      expect(result.message).toBe(
+        `Successfully removed attendance for "${mockEvent.title}"`
+      );
+    });
+
+    it("should handle authentication error", async () => {
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: null },
+        error: { message: "Not authenticated" },
+      });
+
+      const result = await unattendEvent(mockEventId);
+
+      expect(result.success).toBe(false);
+      expect(result.message).toBe("Authentication required");
+    });
+
+    it("should handle event not found", async () => {
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: mockUser },
+        error: null,
+      });
+
+      const eventQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: null,
+          error: { message: "Event not found" },
+        }),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(eventQuery);
+
+      const result = await unattendEvent(mockEventId);
+
+      expect(result.success).toBe(false);
+      expect(result.message).toBe("Event not found");
+    });
+
+    it("should handle not attending event", async () => {
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: mockUser },
+        error: null,
+      });
+
+      const eventQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: mockEvent,
+          error: null,
+        }),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(eventQuery);
+
+      const attendanceQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn(() => ({
+          eq: jest.fn(() => ({
+            single: jest.fn().mockResolvedValue({
+              data: null,
+              error: { message: "No attendance found" },
+            }),
+          })),
+        })),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(attendanceQuery);
+
+      const result = await unattendEvent(mockEventId);
+
+      expect(result.success).toBe(false);
+      expect(result.message).toBe("You are not attending this event");
+    });
+
+    it("should handle pending attendance status", async () => {
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: mockUser },
+        error: null,
+      });
+
+      const eventQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: mockEvent,
+          error: null,
+        }),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(eventQuery);
+
+      const attendanceQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn(() => ({
+          eq: jest.fn(() => ({
+            single: jest.fn().mockResolvedValue({
+              data: { id: "attendance-123", status: "pending" },
+              error: null,
+            }),
+          })),
+        })),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(attendanceQuery);
+
+      const result = await unattendEvent(mockEventId);
+
+      expect(result.success).toBe(false);
+      expect(result.message).toBe(
+        "You can only unattend events you have confirmed attendance for"
+      );
+    });
+
+    it("should handle deletion error", async () => {
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: mockUser },
+        error: null,
+      });
+
+      const eventQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: mockEvent,
+          error: null,
+        }),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(eventQuery);
+
+      const attendanceQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn(() => ({
+          eq: jest.fn(() => ({
+            single: jest.fn().mockResolvedValue({
+              data: { id: "attendance-123", status: "confirmed" },
+              error: null,
+            }),
+          })),
+        })),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(attendanceQuery);
+
+      const deleteQuery = {
+        delete: jest.fn().mockReturnThis(),
+        eq: jest.fn(() => ({
+          eq: jest.fn().mockResolvedValue({
+            data: null,
+            error: { message: "Deletion failed" },
+          }),
+        })),
+      };
+      mockSupabaseClient.from.mockReturnValueOnce(deleteQuery);
+
+      const result = await unattendEvent(mockEventId);
+
+      expect(result.success).toBe(false);
+      expect(result.message).toBe("Failed to unattend event: Deletion failed");
+    });
+
+    it("should handle unexpected errors", async () => {
+      mockSupabaseClient.auth.getUser.mockRejectedValue(
+        new Error("Network error")
+      );
+
+      const result = await unattendEvent(mockEventId);
+
+      expect(result.success).toBe(false);
+      expect(result.message).toBe(
+        "An unexpected error occurred while unattending the event"
+      );
     });
   });
 });

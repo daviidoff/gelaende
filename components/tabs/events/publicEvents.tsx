@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { EventWithDetails } from "@/lib/types/database";
 import { Filter, Globe, RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
+import { attendEvent, unattendEvent } from "./actions";
 import { getUpcomingEvents } from "./data";
 import EventCard from "./eventCard";
 
@@ -57,8 +58,33 @@ export default function PublicEvents() {
   };
 
   const handleJoinEvent = async (eventId: string) => {
-    // TODO: Implement join event functionality
-    console.log("Joining event:", eventId);
+    try {
+      const result = await attendEvent(eventId);
+      if (result.success) {
+        // Refresh events to show updated attendance status
+        await fetchEvents();
+      } else {
+        setError(result.message);
+      }
+    } catch (err) {
+      setError("Fehler beim Teilnehmen am Event");
+      console.error("Error joining event:", err);
+    }
+  };
+
+  const handleUnattendEvent = async (eventId: string) => {
+    try {
+      const result = await unattendEvent(eventId);
+      if (result.success) {
+        // Refresh events to show updated attendance status
+        await fetchEvents();
+      } else {
+        setError(result.message);
+      }
+    } catch (err) {
+      setError("Fehler beim Entfernen der Teilnahme");
+      console.error("Error unattending event:", err);
+    }
   };
 
   const getUniqueCategories = () => {
@@ -164,6 +190,7 @@ export default function PublicEvents() {
             key={event.id}
             event={event}
             onJoin={handleJoinEvent}
+            onUnattend={handleUnattendEvent}
             showJoinButton={true}
           />
         ))}

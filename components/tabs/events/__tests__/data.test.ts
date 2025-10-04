@@ -93,12 +93,14 @@ describe("Events Data Functions", () => {
   };
 
   const mockAttendees = [
-    { user_id: "user-abc", status: "confirmed" },
-    { user_id: "user-def", status: "confirmed" },
-    { user_id: mockUserId, status: "pending" },
+    { event_id: "event-123", user_id: "user-abc", status: "confirmed" },
+    { event_id: "event-123", user_id: "user-def", status: "confirmed" },
+    { event_id: "event-123", user_id: mockUserId, status: "pending" },
   ];
 
-  const mockOrganizers = [{ user_id: mockFriendId1, role: "organizer" }];
+  const mockOrganizers = [
+    { event_id: "event-123", user_id: mockFriendId1, role: "organizer" },
+  ];
 
   describe("getUpcomingFriendsEvents", () => {
     it("should return upcoming events organized by friends successfully", async () => {
@@ -145,7 +147,7 @@ describe("Events Data Functions", () => {
       // Mock attendees query
       const attendeesQuery = {
         select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockResolvedValue({
+        in: jest.fn().mockResolvedValue({
           data: mockAttendees,
           error: null,
         }),
@@ -155,7 +157,7 @@ describe("Events Data Functions", () => {
       // Mock organizers query
       const organizersQuery = {
         select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockResolvedValue({
+        in: jest.fn().mockResolvedValue({
           data: mockOrganizers,
           error: null,
         }),
@@ -292,7 +294,7 @@ describe("Events Data Functions", () => {
       // Mock attendees query
       const attendeesQuery = {
         select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockResolvedValue({
+        in: jest.fn().mockResolvedValue({
           data: mockAttendees,
           error: null,
         }),
@@ -302,7 +304,7 @@ describe("Events Data Functions", () => {
       // Mock organizers query
       const organizersQuery = {
         select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockResolvedValue({
+        in: jest.fn().mockResolvedValue({
           data: mockOrganizers,
           error: null,
         }),

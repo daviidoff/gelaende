@@ -606,31 +606,31 @@ export class TestHelpers {
     };
     mockQueries.push(eventsQuery);
 
-    // Mock attendees queries for each event
-    events.forEach(() => {
+    // Mock attendees query (batch query using .in())
+    if (events.length > 0) {
       const attendeesQuery = {
         select: jest.fn().mockReturnThis(),
-        eq: jest
+        in: jest
           .fn()
           .mockResolvedValue(
             MockSupabaseFactory.successListResponse(attendees)
           ),
       };
       mockQueries.push(attendeesQuery);
-    });
+    }
 
-    // Mock organizers queries for each event
-    events.forEach(() => {
+    // Mock organizers query (batch query using .in())
+    if (events.length > 0) {
       const organizersQuery = {
         select: jest.fn().mockReturnThis(),
-        eq: jest
+        in: jest
           .fn()
           .mockResolvedValue(
             MockSupabaseFactory.successListResponse(organizers)
           ),
       };
       mockQueries.push(organizersQuery);
-    });
+    }
 
     // Set up mockClient.from to return queries in order
     let queryIndex = 0;

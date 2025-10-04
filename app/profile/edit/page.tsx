@@ -1,8 +1,8 @@
-import { ProfileComponent } from "@/components/tabs/profile/profileComponent";
+import { EditProfileForm } from "@/components/tabs/profile/EditProfileForm";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 
-export default async function ProfilePage() {
+export default async function EditProfilePage() {
   const supabase = await createClient();
 
   const {
@@ -30,5 +30,16 @@ export default async function ProfilePage() {
     throw new Error("Failed to load profile");
   }
 
-  return <ProfileComponent initialProfile={profile} />;
+  return (
+    <div className="container mx-auto max-w-2xl py-8 px-4">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold">Edit Profile</h1>
+        <p className="text-muted-foreground mt-2">
+          Update your profile information
+        </p>
+      </div>
+
+      <EditProfileForm initialProfile={profile} />
+    </div>
+  );
 }

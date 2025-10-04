@@ -1,4 +1,4 @@
-import { CreateProfileTab } from "@/components/users/profiles/createProfileTab";
+import { CreateProfileTab } from "@/components/tabs/profile/createProfileTab";
 
 export default function Page() {
   return (

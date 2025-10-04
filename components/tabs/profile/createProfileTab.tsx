@@ -1,6 +1,5 @@
 "use client";
 
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -11,12 +10,13 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 import { useState } from "react";
 import {
   createProfile,
   type CreateProfileData,
   type CreateProfileResult,
-} from "./actions";
+} from "../../tabs/profile/actions";
 
 export function CreateProfileTab({
   className,

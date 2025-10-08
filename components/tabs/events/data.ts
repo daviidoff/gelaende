@@ -124,13 +124,22 @@ export async function getUpcomingFriendsEvents(): Promise<GetUpcomingFriendsEven
       .in("event_id", eventIds);
 
     // Group data by event_id for fast lookup
-    const attendeesByEvent = groupBy(allAttendees || [], "event_id") as Record<
+    const attendeesByEvent = groupBy(
+      allAttendees || [],
+      "event_id"
+    ) as unknown as Record<
       string,
       Array<{
         event_id: string;
         user_id: string;
         status: string;
-        profile?: any;
+        profile?: {
+          profile_id: string;
+          name: string;
+          studiengang: string | null;
+          university: string | null;
+          user_id: string;
+        };
       }>
     >;
     const organizersByEvent = groupBy(
@@ -297,13 +306,22 @@ export async function getUpcomingEvents(): Promise<GetUpcomingFriendsEventsResul
     );
 
     // Group data by event_id for fast lookup
-    const attendeesByEvent = groupBy(allAttendees || [], "event_id") as Record<
+    const attendeesByEvent = groupBy(
+      allAttendees || [],
+      "event_id"
+    ) as unknown as Record<
       string,
       Array<{
         event_id: string;
         user_id: string;
         status: string;
-        profile?: any;
+        profile?: {
+          profile_id: string;
+          name: string;
+          studiengang: string | null;
+          university: string | null;
+          user_id: string;
+        };
       }>
     >;
     const organizersByEvent = groupBy(

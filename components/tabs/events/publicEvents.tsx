@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { createClient } from "@/lib/supabase/client";
 import { EventWithDetails } from "@/lib/types/database";
 import { Filter, Globe, RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -15,6 +16,20 @@ export default function PublicEvents() {
   const [refreshing, setRefreshing] = useState(false);
   const [filteredEvents, setFilteredEvents] = useState<EventWithDetails[]>([]);
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user) {
+        setCurrentUserId(user.id);
+      }
+    };
+    fetchCurrentUser();
+  }, []);
 
   const fetchEvents = async () => {
     try {
@@ -24,6 +39,13 @@ export default function PublicEvents() {
       if (result.success && result.data) {
         // Filter for public events only
         const publicEvents = result.data.filter((event) => event.is_public);
+        console.log(
+          "[PublicEvents] Fetched events:",
+          publicEvents.map((e) => ({
+            title: e.title,
+            is_attending: e.is_attending,
+          }))
+        );
         setEvents(publicEvents);
         setFilteredEvents(publicEvents);
       } else {
@@ -192,6 +214,7 @@ export default function PublicEvents() {
             onJoin={handleJoinEvent}
             onUnattend={handleUnattendEvent}
             showJoinButton={true}
+            currentUserId={currentUserId || undefined}
           />
         ))}
       </div>

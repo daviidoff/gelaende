@@ -1,5 +1,3 @@
-"use client";
-
 import EventsNav from "@/components/tabs/events/eventsNav";
 import FriendsEvents from "@/components/tabs/events/friendsEvents";
 import { Suspense } from "react";
@@ -23,7 +21,7 @@ function EventsPageSkeleton() {
 export default function FriendsEventsPage() {
   return (
     <div className="container mx-auto p-4 max-w-7xl">
-      <EventsNav />
+      <EventsNav activeTab="friends" />
 
       <Suspense fallback={<EventsPageSkeleton />}>
         <FriendsEvents />

@@ -23,7 +23,7 @@ function EventsPageSkeleton() {
 export default function PublicEventsPage() {
   return (
     <div className="container mx-auto p-4 max-w-7xl">
-      <EventsNav />
+      <EventsNav activeTab="public" />
 
       <Suspense fallback={<EventsPageSkeleton />}>
         <PublicEvents />

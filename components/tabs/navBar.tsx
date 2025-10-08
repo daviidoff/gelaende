@@ -7,15 +7,20 @@ import {
   UserIcon,
   UsersIcon,
 } from "lucide-react";
-import { usePathname, useRouter } from "next/navigation";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export default function NavBar() {
   const pathname = usePathname();
-  const router = useRouter();
 
   const tabs = [
     { key: "map", label: "Map", icon: MapIcon, path: "/map" },
-    { key: "events", label: "Events", icon: CalendarIcon, path: "/events" },
+    {
+      key: "events",
+      label: "Events",
+      icon: CalendarIcon,
+      path: "/events/friends",
+    },
     {
       key: "add-activity",
       label: "Add",
@@ -47,9 +52,9 @@ export default function NavBar() {
             const isSpecial = tab.special;
 
             return (
-              <button
+              <Link
                 key={tab.key}
-                onClick={() => router.push(tab.path)}
+                href={tab.path}
                 className={`flex flex-col items-center justify-center relative transition-colors duration-200 ${
                   isSpecial ? "transform -translate-y-2" : ""
                 } ${
@@ -70,7 +75,7 @@ export default function NavBar() {
                 >
                   {tab.label}
                 </span>
-              </button>
+              </Link>
             );
           })}
         </div>

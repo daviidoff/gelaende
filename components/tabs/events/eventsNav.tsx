@@ -1,5 +1,3 @@
-"use client";
-
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -17,16 +15,13 @@ import {
   Zap,
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
 
 interface EventsNavProps {
   className?: string;
+  activeTab?: "friends" | "public";
 }
 
-export default function EventsNav({ className }: EventsNavProps) {
-  const pathname = usePathname();
-  const router = useRouter();
-
+export default function EventsNav({ className, activeTab }: EventsNavProps) {
   const tabs = [
     {
       key: "friends",
@@ -57,23 +52,27 @@ export default function EventsNav({ className }: EventsNavProps) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => router.push("/events/simple-add")}>
-              <Zap className="mr-2 h-4 w-4" />
-              <div>
-                <div className="font-medium">Quick Event</div>
-                <div className="text-xs text-muted-foreground">
-                  Schnell und einfach
+            <DropdownMenuItem asChild>
+              <Link href="/events/simple-add" className="cursor-pointer">
+                <Zap className="mr-2 h-4 w-4" />
+                <div>
+                  <div className="font-medium">Quick Event</div>
+                  <div className="text-xs text-muted-foreground">
+                    Schnell und einfach
+                  </div>
                 </div>
-              </div>
+              </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => router.push("/events/add")}>
-              <Settings className="mr-2 h-4 w-4" />
-              <div>
-                <div className="font-medium">Erweitert</div>
-                <div className="text-xs text-muted-foreground">
-                  Alle Optionen
+            <DropdownMenuItem asChild>
+              <Link href="/events/add" className="cursor-pointer">
+                <Settings className="mr-2 h-4 w-4" />
+                <div>
+                  <div className="font-medium">Erweitert</div>
+                  <div className="text-xs text-muted-foreground">
+                    Alle Optionen
+                  </div>
                 </div>
-              </div>
+              </Link>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -82,7 +81,7 @@ export default function EventsNav({ className }: EventsNavProps) {
       <div className="border-b border-divider">
         <nav className="flex gap-6">
           {tabs.map((tab) => {
-            const isActive = pathname === tab.href;
+            const isActive = activeTab === tab.key;
             const Icon = tab.icon;
 
             return (

@@ -109,10 +109,12 @@ export async function getUpcomingFriendsEvents(): Promise<GetUpcomingFriendsEven
 
     const eventIds = events.map((e) => e.id);
 
-    // Batch query for ALL attendees (single query instead of N queries)
+    // Batch query for ALL attendees with profiles (single query instead of N queries)
     const { data: allAttendees } = await supabase
       .from("event_attendees")
-      .select("event_id, user_id, status")
+      .select(
+        "event_id, user_id, status, profile:profiles!event_attendees_user_id_fkey(profile_id, name, studiengang, university, user_id)"
+      )
       .in("event_id", eventIds);
 
     // Batch query for ALL organizers (single query instead of N queries)
@@ -124,7 +126,12 @@ export async function getUpcomingFriendsEvents(): Promise<GetUpcomingFriendsEven
     // Group data by event_id for fast lookup
     const attendeesByEvent = groupBy(allAttendees || [], "event_id") as Record<
       string,
-      Array<{ event_id: string; user_id: string; status: string }>
+      Array<{
+        event_id: string;
+        user_id: string;
+        status: string;
+        profile?: any;
+      }>
     >;
     const organizersByEvent = groupBy(
       allOrganizers || [],
@@ -134,24 +141,53 @@ export async function getUpcomingFriendsEvents(): Promise<GetUpcomingFriendsEven
       Array<{ event_id: string; user_id: string; role: string }>
     >;
 
+    // Convert friendIds array to Set for faster lookups
+    const friendIdsSet = new Set(friendIds);
+
     // Enrich events with attendance data (all in memory, no more DB calls)
     const eventsWithDetails: EventWithDetails[] = events.map((event) => {
       const eventAttendees = attendeesByEvent[event.id] || [];
       const eventOrganizers = organizersByEvent[event.id] || [];
 
-      const attendee_count = eventAttendees.filter(
+      const confirmedAttendees = eventAttendees.filter(
         (a) => a.status === "confirmed"
-      ).length;
+      );
+
+      const attendee_count = confirmedAttendees.length;
       const is_attending = eventAttendees.some(
         (a) => a.user_id === userId && a.status === "confirmed"
       );
       const is_organizing = eventOrganizers.some((o) => o.user_id === userId);
+
+      // Debug logging
+      console.log(
+        "Event:",
+        event.title,
+        "User:",
+        userId,
+        "is_attending:",
+        is_attending,
+        "attendees:",
+        eventAttendees.map((a) => ({ user: a.user_id, status: a.status }))
+      );
+
+      // Map attendees with friendship info
+      const attendees = confirmedAttendees
+        .filter((a) => a.profile)
+        .map((a) => ({
+          ...a,
+          profile: {
+            ...a.profile,
+            isFriend: friendIdsSet.has(a.user_id),
+          },
+        }));
 
       return {
         ...event,
         attendee_count,
         is_attending,
         is_organizing,
+        attendees,
       };
     });
 
@@ -234,10 +270,12 @@ export async function getUpcomingEvents(): Promise<GetUpcomingFriendsEventsResul
 
     const eventIds = events.map((e) => e.id);
 
-    // Batch query for ALL attendees (single query instead of N queries)
+    // Batch query for ALL attendees with profiles (single query instead of N queries)
     const { data: allAttendees } = await supabase
       .from("event_attendees")
-      .select("event_id, user_id, status")
+      .select(
+        "event_id, user_id, status, profile:profiles!event_attendees_user_id_fkey(profile_id, name, studiengang, university, user_id)"
+      )
       .in("event_id", eventIds);
 
     // Batch query for ALL organizers (single query instead of N queries)
@@ -246,10 +284,27 @@ export async function getUpcomingEvents(): Promise<GetUpcomingFriendsEventsResul
       .select("event_id, user_id, role")
       .in("event_id", eventIds);
 
+    // Get friend IDs
+    const { data: friendships } = await supabase
+      .from("friendships")
+      .select("user1_id, user2_id")
+      .or(`user1_id.eq.${userId},user2_id.eq.${userId}`);
+
+    const friendIds = new Set(
+      (friendships || []).map((f) =>
+        f.user1_id === userId ? f.user2_id : f.user1_id
+      )
+    );
+
     // Group data by event_id for fast lookup
     const attendeesByEvent = groupBy(allAttendees || [], "event_id") as Record<
       string,
-      Array<{ event_id: string; user_id: string; status: string }>
+      Array<{
+        event_id: string;
+        user_id: string;
+        status: string;
+        profile?: any;
+      }>
     >;
     const organizersByEvent = groupBy(
       allOrganizers || [],
@@ -264,19 +319,45 @@ export async function getUpcomingEvents(): Promise<GetUpcomingFriendsEventsResul
       const eventAttendees = attendeesByEvent[event.id] || [];
       const eventOrganizers = organizersByEvent[event.id] || [];
 
-      const attendee_count = eventAttendees.filter(
+      const confirmedAttendees = eventAttendees.filter(
         (a) => a.status === "confirmed"
-      ).length;
+      );
+
+      const attendee_count = confirmedAttendees.length;
       const is_attending = eventAttendees.some(
         (a) => a.user_id === userId && a.status === "confirmed"
       );
       const is_organizing = eventOrganizers.some((o) => o.user_id === userId);
+
+      // Debug logging
+      console.log(
+        "[getUpcomingEvents] Event:",
+        event.title,
+        "User:",
+        userId,
+        "is_attending:",
+        is_attending,
+        "attendees:",
+        eventAttendees.map((a) => ({ user: a.user_id, status: a.status }))
+      );
+
+      // Map attendees with friendship info
+      const attendees = confirmedAttendees
+        .filter((a) => a.profile)
+        .map((a) => ({
+          ...a,
+          profile: {
+            ...a.profile,
+            isFriend: friendIds.has(a.user_id),
+          },
+        }));
 
       return {
         ...event,
         attendee_count,
         is_attending,
         is_organizing,
+        attendees,
       };
     });
 
@@ -417,20 +498,48 @@ export async function getMyEvents(): Promise<GetUpcomingFriendsEventsResult> {
       }
     });
 
-    // Get attendee counts for each event
+    // Get friend IDs
+    const { data: friendships } = await supabase
+      .from("friendships")
+      .select("user1_id, user2_id")
+      .or(`user1_id.eq.${userId},user2_id.eq.${userId}`);
+
+    const friendIds = new Set(
+      (friendships || []).map((f) =>
+        f.user1_id === userId ? f.user2_id : f.user1_id
+      )
+    );
+
+    // Get attendee counts and profiles for each event
     const eventsWithDetails = await Promise.all(
       combinedEvents.map(async (event) => {
         const { data: attendees } = await supabase
           .from("event_attendees")
-          .select("status")
+          .select(
+            "status, user_id, profile:profiles!event_attendees_user_id_fkey(profile_id, name, studiengang, university, user_id)"
+          )
           .eq("event_id", event.id);
 
-        const attendee_count =
-          attendees?.filter((a) => a.status === "confirmed").length || 0;
+        const confirmedAttendees = (attendees || []).filter(
+          (a) => a.status === "confirmed"
+        );
+        const attendee_count = confirmedAttendees.length;
+
+        // Map attendees with friendship info
+        const attendeesWithFriendship = confirmedAttendees
+          .filter((a) => a.profile)
+          .map((a) => ({
+            ...a,
+            profile: {
+              ...a.profile,
+              isFriend: friendIds.has(a.user_id),
+            },
+          }));
 
         return {
           ...event,
           attendee_count,
+          attendees: attendeesWithFriendship,
         } as EventWithDetails;
       })
     );

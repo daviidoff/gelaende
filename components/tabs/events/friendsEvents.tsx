@@ -1,101 +1,27 @@
-"use client";
-
-import { Button } from "@/components/ui/button";
-import { EventWithDetails } from "@/lib/types/database";
-import { RefreshCw, UserPlus } from "lucide-react";
-import { useEffect, useState } from "react";
-import { attendEvent, unattendEvent } from "./actions";
+import { createClient } from "@/lib/supabase/server";
+import { UserPlus } from "lucide-react";
 import { getUpcomingFriendsEvents } from "./data";
-import EventCard from "./eventCard";
+import EventCardClient from "./eventCardClient";
+import RefreshButton from "./refreshButton";
 
-export default function FriendsEvents() {
-  const [events, setEvents] = useState<EventWithDetails[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [refreshing, setRefreshing] = useState(false);
+export default async function FriendsEvents() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  const fetchEvents = async () => {
-    try {
-      setError(null);
-      const result = await getUpcomingFriendsEvents();
+  const result = await getUpcomingFriendsEvents();
 
-      if (result.success && result.data) {
-        setEvents(result.data);
-      } else {
-        setError(result.message);
-      }
-    } catch (err) {
-      setError("Fehler beim Laden der Events");
-      console.error("Error fetching friends events:", err);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchEvents();
-  }, []);
-
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    await fetchEvents();
-  };
-
-  const handleJoinEvent = async (eventId: string) => {
-    try {
-      const result = await attendEvent(eventId);
-      if (result.success) {
-        // Refresh events to show updated attendance status
-        await fetchEvents();
-      } else {
-        setError(result.message);
-      }
-    } catch (err) {
-      setError("Fehler beim Teilnehmen am Event");
-      console.error("Error joining event:", err);
-    }
-  };
-
-  const handleUnattendEvent = async (eventId: string) => {
-    try {
-      const result = await unattendEvent(eventId);
-      if (result.success) {
-        // Refresh events to show updated attendance status
-        await fetchEvents();
-      } else {
-        setError(result.message);
-      }
-    } catch (err) {
-      setError("Fehler beim Entfernen der Teilnahme");
-      console.error("Error unattending event:", err);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="space-y-4">
-        {[1, 2, 3].map((i) => (
-          <div
-            key={i}
-            className="h-48 bg-gray-100 rounded-lg animate-pulse"
-          ></div>
-        ))}
-      </div>
-    );
-  }
-
-  if (error) {
+  if (!result.success || !result.data) {
     return (
       <div className="text-center py-8">
-        <p className="text-red-500 mb-4">{error}</p>
-        <Button onClick={handleRefresh} variant="outline">
-          <RefreshCw className="w-4 h-4 mr-2" />
-          Erneut versuchen
-        </Button>
+        <p className="text-red-500 mb-4">{result.message}</p>
+        <RefreshButton />
       </div>
     );
   }
+
+  const events = result.data;
 
   if (events.length === 0) {
     return (
@@ -109,10 +35,7 @@ export default function FriendsEvents() {
           keine Freunde hinzugefügt.
         </p>
         <div className="flex gap-2 justify-center">
-          <Button onClick={handleRefresh} variant="outline">
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Aktualisieren
-          </Button>
+          <RefreshButton />
         </div>
       </div>
     );
@@ -125,27 +48,15 @@ export default function FriendsEvents() {
           {events.length} {events.length === 1 ? "Event" : "Events"} von deinen
           Freunden
         </p>
-        <Button
-          onClick={handleRefresh}
-          variant="outline"
-          size="sm"
-          disabled={refreshing}
-        >
-          <RefreshCw
-            className={`w-4 h-4 mr-2 ${refreshing ? "animate-spin" : ""}`}
-          />
-          Aktualisieren
-        </Button>
+        <RefreshButton />
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {events.map((event) => (
-          <EventCard
+          <EventCardClient
             key={event.id}
             event={event}
-            onJoin={handleJoinEvent}
-            onUnattend={handleUnattendEvent}
-            showJoinButton={true}
+            currentUserId={user?.id}
           />
         ))}
       </div>

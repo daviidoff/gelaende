@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Event, EventWithDetails } from "@/lib/types/database";
 import { CalendarIcon, ClockIcon, MapPinIcon, UsersIcon } from "lucide-react";
+import EventAttendeeAvatars from "./EventAttendeeAvatars";
 
 interface EventCardProps {
   event: Event | EventWithDetails;
@@ -16,6 +17,7 @@ interface EventCardProps {
   onUnattend?: (eventId: string) => void;
   isJoined?: boolean;
   showJoinButton?: boolean;
+  currentUserId?: string;
 }
 
 export default function EventCard({
@@ -24,6 +26,7 @@ export default function EventCard({
   onUnattend,
   isJoined = false,
   showJoinButton = true,
+  currentUserId,
 }: EventCardProps) {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -128,6 +131,23 @@ export default function EventCard({
             </span>
           </div>
 
+          {/* Avatar Group for Attendees */}
+          {"attendees" in event &&
+            event.attendees &&
+            event.attendees.length > 0 &&
+            currentUserId && (
+              <EventAttendeeAvatars
+                attendees={event.attendees
+                  .map((a) => a.profile)
+                  .filter(
+                    (p): p is NonNullable<typeof p> =>
+                      p !== null && p !== undefined
+                  )}
+                currentUserId={currentUserId}
+                maxVisible={5}
+              />
+            )}
+
           {event.max_attendees && (
             <div className="flex items-center gap-2 text-muted-foreground">
               <UsersIcon className="h-4 w-4 flex-shrink-0" />
@@ -161,7 +181,21 @@ export default function EventCard({
 
       {showJoinButton && event.status === "published" && (
         <CardFooter className="pt-3">
-          {isJoined || ("is_attending" in event && event.is_attending) ? (
+          {(() => {
+            const attending =
+              isJoined || ("is_attending" in event && event.is_attending);
+            console.log(
+              "[EventCard]",
+              event.title,
+              "isJoined:",
+              isJoined,
+              "is_attending:",
+              "is_attending" in event ? event.is_attending : "not in event",
+              "attending:",
+              attending
+            );
+            return attending;
+          })() ? (
             <div className="w-full flex gap-2">
               <Button variant="secondary" className="flex-1" disabled>
                 Teilgenommen

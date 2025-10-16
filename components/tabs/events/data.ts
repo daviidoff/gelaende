@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { EventWithDetails } from "@/lib/types/database";
+import { EventWithDetails, EventAttendeeWithProfile } from "@/lib/types/database";
 
 // Helper function to group array by key
 function groupBy<T>(array: T[], key: keyof T): Record<string, T[]> {
@@ -129,18 +129,7 @@ export async function getUpcomingFriendsEvents(): Promise<GetUpcomingFriendsEven
       "event_id"
     ) as unknown as Record<
       string,
-      Array<{
-        event_id: string;
-        user_id: string;
-        status: string;
-        profile?: {
-          profile_id: string;
-          name: string;
-          studiengang: string | null;
-          university: string | null;
-          user_id: string;
-        };
-      }>
+      EventAttendeeWithProfile[]
     >;
     const organizersByEvent = groupBy(
       allOrganizers || [],
@@ -311,18 +300,7 @@ export async function getUpcomingEvents(): Promise<GetUpcomingFriendsEventsResul
       "event_id"
     ) as unknown as Record<
       string,
-      Array<{
-        event_id: string;
-        user_id: string;
-        status: string;
-        profile?: {
-          profile_id: string;
-          name: string;
-          studiengang: string | null;
-          university: string | null;
-          user_id: string;
-        };
-      }>
+      EventAttendeeWithProfile[]
     >;
     const organizersByEvent = groupBy(
       allOrganizers || [],

@@ -100,27 +100,9 @@ All tables have RLS enabled with the following policies:
 
 ## Database Setup
 
-### 1. Apply the Migration
+Follow the local setup guide to apply the migrations, add a campus place, and connect the app to Supabase. [Run Gelände locally](../README.md#run-locally)
 
-Run the migration file in your Supabase dashboard or using the Supabase CLI:
-
-```bash
-# If using Supabase CLI
-supabase db reset
-# Or apply the specific migration
-supabase db push
-```
-
-### 2. Environment Variables
-
-Ensure your `.env.local` file contains:
-
-```
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_OR_ANON_KEY=your_anon_key
-```
-
-### 3. TypeScript Integration
+### TypeScript Integration
 
 The `lib/types/database.ts` file provides TypeScript types that match your database schema. Import these types in your components:
 

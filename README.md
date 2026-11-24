@@ -1,117 +1,78 @@
-### Pre-commit hook
+# Gelände
 
-To avoid commiting anything that breaks linting rules, you can set up a git
-pre-commit hook. The `.githooks/` directory contains such a hook, so the easiest
-way to set it up is to just configure git to use hooks from there:
+Gelände helps students meet up between classes. See who last checked in at the library or the campus café, share a photo from your own spot, or find a campus event to join later in the day.
 
-```
-$ git config core.hooksPath .githooks
-```
+[Open Gelände](https://gelaende.vercel.app/)
 
-$ git config core.hooksPath .githooks
+![Gelände’s desktop landing page](docs/screenshots/landing.png)
 
-<a href="https://demo-nextjs-with-supabase.vercel.app/">
-  <img alt="Next.js and Supabase Starter Kit - the fastest way to build apps with Next.js and Supabase" src="https://demo-nextjs-with-supabase.vercel.app/opengraph-image.png">
-  <h1 align="center">Next.js and Supabase Starter Kit</h1>
-</a>
-
-<p align="center">
- The fastest way to build apps with Next.js and Supabase
-</p>
-
-<p align="center">
-  <a href="#features"><strong>Features</strong></a> ·
-  <a href="#demo"><strong>Demo</strong></a> ·
-  <a href="#deploy-to-vercel"><strong>Deploy to Vercel</strong></a> ·
-  <a href="#clone-and-run-locally"><strong>Clone and run locally</strong></a> ·
-  <a href="#feedback-and-issues"><strong>Feedback and issues</strong></a>
-  <a href="#more-supabase-examples"><strong>More Examples</strong></a>
-</p>
-<br/>
+| Campus check-ins | Public events |
+| --- | --- |
+| ![Mila’s library check-in with a photo of bookshelves and Jona’s café check-in with a photo of an espresso](docs/screenshots/check-ins.png) | ![A public campus sketching event with its location, attendees, and join button](docs/screenshots/events.png) |
 
 ## Features
 
-- Works across the entire [Next.js](https://nextjs.org) stack
-  - App Router
-  - Pages Router
-  - Middleware
-  - Client
-  - Server
-  - It just works!
-- supabase-ssr. A package to configure Supabase Auth to use cookies
-- Password-based authentication block installed via the [Supabase UI Library](https://supabase.com/ui/docs/nextjs/password-based-auth)
-- Styling with [Tailwind CSS](https://tailwindcss.com)
-- Components with [shadcn/ui](https://ui.shadcn.com/)
-- Optional deployment with [Supabase Vercel Integration and Vercel deploy](#deploy-your-own)
-  - Environment variables automatically assigned to Vercel project
+- **Campus check-ins.** Choose a place, add an optional photo, and revisit past check-ins on your profile.
+- **Friends.** Search for classmates by name and send a friend request. Once connected, their latest check-ins appear in your feed.
+- **Events.** Browse public events by category, see the time, place, and attendees, and mark yourself as going.
 
-## Demo
+The app uses the Next.js App Router, TypeScript, and Tailwind CSS. Supabase handles email/password sign-in and stores the campus data in PostgreSQL.
 
-You can view a fully working demo at [demo-nextjs-with-supabase.vercel.app](https://demo-nextjs-with-supabase.vercel.app/).
+## Run locally
+
+The steps below use Node.js 24, pnpm 10, and a new Supabase project with the Data API enabled.
+
+```sh
+git clone https://github.com/daviidoff/gelaende.git
+cd gelaende
+pnpm install --frozen-lockfile
+```
+
+### Set up the database
+
+1. In the SQL Editor for your new Supabase project, run each migration once, in ascending filename order. [Migration files](supabase/migrations)
+2. Give students a place they can search for. Run this in the same SQL Editor to add a library.
+
+   ```sql
+   INSERT INTO public.places (place_id, name)
+   VALUES ('550e8400-e29b-41d4-a716-446655440001', 'Universitätsbibliothek')
+   ON CONFLICT (place_id) DO NOTHING;
+   ```
+
+### Connect the app
+
+Create `.env.local` in the repository root. Use the project URL and the **publishable key** (or legacy **anon** key) from your Supabase project's Connect dialog.
+
+```dotenv
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-public-key
+```
+
+```sh
+pnpm dev
+```
+
+For a first local check-in, create a confirmed test user under **Authentication → Users** in Supabase. Sign in, create your profile, then choose **Add**, search for `Universitätsbibliothek`, and select it. You can take a photo or skip straight to your check-in feed. [Open the local app](http://localhost:3000)
+
+### Email sign-up and password recovery
+
+To let people sign up through the app, enable the Email provider in Supabase. Under **Authentication → URL Configuration**, set the Site URL to your app origin (`http://localhost:3000` for development). Add the full URLs for `/map` and `/auth/update-password` on that origin to the redirect allow list.
+
+Set the links in the two email templates to use Gelände’s confirmation route. For sign-ups outside your Supabase team, configure an SMTP provider. [Supabase email delivery](https://supabase.com/docs/guides/auth/auth-smtp)
+
+| Email template | Link target |
+| --- | --- |
+| Confirm signup | `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email&next=/map` |
+| Reset password | `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery&next=/auth/update-password` |
 
 ## Deploy to Vercel
 
-Vercel deployment will guide you through creating a Supabase account and project.
+Prepare the production Supabase database using the steps above. The button imports this repository and prompts for the two public environment variables. Use the deployment’s HTTPS origin for the production Site URL and redirect URLs.
 
-After installation of the Supabase integration, all relevant environment variables will be assigned to the project so the deployment is fully functioning.
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fdaviidoff%2Fgelaende&env=NEXT_PUBLIC_SUPABASE_URL%2CNEXT_PUBLIC_SUPABASE_ANON_KEY&install-command=npx%20--yes%20pnpm%4010.18.3%20install%20--frozen-lockfile)
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fnext.js%2Ftree%2Fcanary%2Fexamples%2Fwith-supabase&project-name=nextjs-with-supabase&repository-name=nextjs-with-supabase&demo-title=nextjs-with-supabase&demo-description=This+starter+configures+Supabase+Auth+to+use+cookies%2C+making+the+user%27s+session+available+throughout+the+entire+Next.js+app+-+Client+Components%2C+Server+Components%2C+Route+Handlers%2C+Server+Actions+and+Middleware.&demo-url=https%3A%2F%2Fdemo-nextjs-with-supabase.vercel.app%2F&external-id=https%3A%2F%2Fgithub.com%2Fvercel%2Fnext.js%2Ftree%2Fcanary%2Fexamples%2Fwith-supabase&demo-image=https%3A%2F%2Fdemo-nextjs-with-supabase.vercel.app%2Fopengraph-image.png)
+## Contributing
 
-The above will also clone the Starter kit to your GitHub, you can clone that locally and develop locally.
+Run `pnpm lint` and `pnpm check-types` for static checks and `pnpm test` for the Jest suite. The optional pre-commit hook runs lint and type checks with Yarn. If you have Yarn installed, enable the hook with `git config core.hooksPath .githooks`.
 
-If you wish to just develop locally and not deploy to Vercel, [follow the steps below](#clone-and-run-locally).
-
-## Clone and run locally
-
-1. You'll first need a Supabase project which can be made [via the Supabase dashboard](https://database.new)
-
-2. Create a Next.js app using the Supabase Starter template npx command
-
-   ```bash
-   npx create-next-app --example with-supabase with-supabase-app
-   ```
-
-   ```bash
-   yarn create next-app --example with-supabase with-supabase-app
-   ```
-
-   ```bash
-   pnpm create next-app --example with-supabase with-supabase-app
-   ```
-
-3. Use `cd` to change into the app's directory
-
-   ```bash
-   cd with-supabase-app
-   ```
-
-4. Rename `.env.example` to `.env.local` and update the following:
-
-   ```
-   NEXT_PUBLIC_SUPABASE_URL=[INSERT SUPABASE PROJECT URL]
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=[INSERT SUPABASE PROJECT API ANON KEY]
-   ```
-
-   Both `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` can be found in [your Supabase project's API settings](https://supabase.com/dashboard/project/_?showConnect=true)
-
-5. You can now run the Next.js local development server:
-
-   ```bash
-   npm run dev
-   ```
-
-   The starter kit should now be running on [localhost:3000](http://localhost:3000/).
-
-6. This template comes with the default shadcn/ui style initialized. If you instead want other ui.shadcn styles, delete `components.json` and [re-install shadcn/ui](https://ui.shadcn.com/docs/installation/next)
-
-> Check out [the docs for Local Development](https://supabase.com/docs/guides/getting-started/local-development) to also run Supabase locally.
-
-## Feedback and issues
-
-Please file feedback and issues over on the [Supabase GitHub org](https://github.com/supabase/supabase/issues/new/choose).
-
-## More Supabase examples
-
-- [Next.js Subscription Payments Starter](https://github.com/vercel/nextjs-subscription-payments)
-- [Cookie-based Auth and the Next.js 13 App Router (free course)](https://youtube.com/playlist?list=PL5S4mPUpp4OtMhpnp93EFSo42iQ40XjbF)
-- [Supabase Auth and the Next.js App Router](https://github.com/supabase/supabase/tree/master/examples/auth/nextjs)
+Report bugs and suggest improvements in [Gelände issues](https://github.com/daviidoff/gelaende/issues).

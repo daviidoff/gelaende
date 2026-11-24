@@ -4,11 +4,31 @@ Gelände helps students meet up between classes. See who last checked in at the 
 
 [Open Gelände](https://gelaende.vercel.app/)
 
-![Gelände’s desktop landing page](docs/screenshots/landing.png)
+<p align="center">
+  <a href="docs/screenshots/landing.webp?raw=1">
+    <img src="docs/screenshots/landing.webp" width="500" alt="Gelände’s desktop landing page">
+  </a>
+</p>
 
-| Campus check-ins | Public events |
-| --- | --- |
-| ![Mila’s library check-in with a photo of bookshelves and Jona’s café check-in with a photo of an espresso](docs/screenshots/check-ins.png) | ![A public campus sketching event with its location, attendees, and join button](docs/screenshots/events.png) |
+<table align="center">
+  <thead>
+    <tr><th width="50%">Campus check‑ins</th><th width="50%">Public events</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <a href="docs/screenshots/check-ins.webp?raw=1">
+          <img src="docs/screenshots/check-ins.webp" width="220" alt="Mila’s library check-in with a photo of bookshelves and Jona’s café check-in with a photo of an espresso">
+        </a>
+      </td>
+      <td>
+        <a href="docs/screenshots/events.webp?raw=1">
+          <img src="docs/screenshots/events.webp" width="220" alt="A public campus sketching event with its location, attendees, and join button">
+        </a>
+      </td>
+    </tr>
+  </tbody>
+</table>
 
 ## Features
 
